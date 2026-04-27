@@ -8,6 +8,9 @@ import InvoicesTable from "./invoices-table";
 import ExportButton from "./export-button";
 import { RefreshCw } from "lucide-react";
 
+type Tab = "All" | "April" | "March" | "February";
+const TABS: Tab[] = ["All", "April", "March", "February"];
+
 export default function Dashboard() {
   const [rows, setRows] = useState<InvoiceRow[]>([]);
   const [annotations, setAnnotations] = useState<AnnotationsMap>({});
@@ -15,6 +18,7 @@ export default function Dashboard() {
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [fetchedAt, setFetchedAt] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<Tab>("All");
   const [filters, setFilters] = useState<FilterState>({
     q: "",
     am: "",
@@ -68,9 +72,15 @@ export default function Dashboard() {
     return out;
   }, [rows]);
 
+  // Apply tab month filter first, then user filters
+  const tabFiltered = useMemo(() => {
+    if (activeTab === "All") return rows;
+    return rows.filter((r) => r.invoiceMonth === activeTab);
+  }, [rows, activeTab]);
+
   const filtered = useMemo(() => {
     const q = filters.q.trim().toLowerCase();
-    return rows.filter((r) => {
+    return tabFiltered.filter((r) => {
       if (q) {
         const blob = `${r.bizName} ${r.amName} ${r.customerId} ${r.invoiceNumber} ${r.customerEmail} ${r.customerCompany}`.toLowerCase();
         if (!blob.includes(q)) return false;
@@ -87,7 +97,17 @@ export default function Dashboard() {
       }
       return true;
     });
-  }, [rows, filters, multiMonthSet]);
+  }, [tabFiltered, filters, multiMonthSet]);
+
+  const tabCounts = useMemo(() => {
+    const m: Record<Tab, number> = { All: rows.length, April: 0, March: 0, February: 0 };
+    for (const r of rows) {
+      if (r.invoiceMonth === "April") m.April++;
+      else if (r.invoiceMonth === "March") m.March++;
+      else if (r.invoiceMonth === "February") m.February++;
+    }
+    return m;
+  }, [rows]);
 
   async function saveAnnotation(invoiceNumber: string, patch: any) {
     setAnnotations((prev) => ({
@@ -104,11 +124,11 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="space-y-4">
-      <header className="flex items-center justify-between">
+    <div className="space-y-6">
+      <header className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-xl font-semibold">Missed Invoice Tracker</h1>
-          <p className="text-xs text-gray-500">
+          <h1 className="display text-2xl font-bold text-zoca-purpleDark">Missed Invoice Tracker</h1>
+          <p className="text-xs text-zoca-neutral40 mt-1">
             Live Chargebee + Metabase
             {fetchedAt ? ` · last fetch ${new Date(fetchedAt).toLocaleString()}` : ""}
           </p>
@@ -117,7 +137,7 @@ export default function Dashboard() {
           <button
             onClick={() => loadInvoices(true)}
             disabled={refreshing}
-            className="inline-flex items-center gap-1 px-3 py-1.5 border border-gray-300 rounded-md text-sm bg-white hover:bg-gray-50 disabled:opacity-60"
+            className="btn-ghost"
           >
             <RefreshCw size={14} className={refreshing ? "animate-spin" : ""} />
             Refresh
@@ -127,10 +147,25 @@ export default function Dashboard() {
       </header>
 
       {error && (
-        <div className="p-3 rounded-md bg-red-50 text-red-800 text-sm border border-red-200">
+        <div className="card-zoca text-sm" style={{ background: "#fff0f3", borderColor: "#ffd6e1", color: "#9b1d3b" }}>
           {error}
         </div>
       )}
+
+      {/* Tabs */}
+      <div role="tablist" className="flex gap-1 flex-wrap card-zoca !p-1.5 inline-flex w-fit">
+        {TABS.map((t) => (
+          <button
+            key={t}
+            role="tab"
+            aria-selected={activeTab === t}
+            onClick={() => setActiveTab(t)}
+            className="tab-pill"
+          >
+            {t} <span className="opacity-70 ml-1 text-[11px]">({tabCounts[t]})</span>
+          </button>
+        ))}
+      </div>
 
       <KpiCards rows={filtered} multiMonthSet={multiMonthSet} />
       <Charts rows={filtered} />

@@ -14,35 +14,39 @@ function compare(a: any, b: any) {
 function fmt(n: number) { return "$" + Math.round(n).toLocaleString(); }
 
 function StatusPill({ s }: { s: string }) {
-  const cls = s === "payment_due" ? "bg-zoca-softAmber text-amber-800" : "bg-zoca-softRed text-red-800";
-  return <span className={`pill ${cls}`}>{s}</span>;
+  const cls =
+    s === "payment_due"
+      ? "pill"
+      : "pill";
+  const style: React.CSSProperties =
+    s === "payment_due"
+      ? { background: "#ffe0ee", color: "#9b1d3b" }
+      : { background: "#fce4e4", color: "#9c0006" };
+  return <span className={cls} style={style}>{s}</span>;
 }
 
 function AchPill({ s }: { s: string }) {
   if (!s) return null;
-  return <span className="pill bg-zoca-softBlue text-blue-800">{s}</span>;
+  return <span className="pill" style={{ background: "#ece6ff", color: "#3b1e7a" }}>{s}</span>;
 }
 
-function callerStyle(v: string) {
-  if (v === "Shakthi") return "bg-red-50 text-red-800";
-  if (v === "Joshi") return "bg-green-50 text-green-800";
-  return "";
+function callerStyle(v: string): React.CSSProperties {
+  if (v === "Shakthi") return { background: "#fce4e4", color: "#9c0006" };
+  if (v === "Joshi") return { background: "#e2efda", color: "#1a5e1a" };
+  return {};
 }
-function connStyle(v: string) {
-  if (v === "Connected") return "bg-green-50 text-green-800";
-  if (v === "VM") return "bg-blue-50 text-blue-800";
-  if (v === "Not connected") return "bg-red-50 text-red-800";
-  return "";
+function connStyle(v: string): React.CSSProperties {
+  if (v === "Connected") return { background: "#e2efda", color: "#1a5e1a" };
+  if (v === "VM") return { background: "#d9e2f3", color: "#1f3864" };
+  if (v === "Not connected") return { background: "#fce4e4", color: "#9c0006" };
+  return {};
 }
 
-function EditableText({
-  value,
-  onSave
-}: { value: string; onSave: (v: string) => void }) {
+function EditableText({ value, onSave }: { value: string; onSave: (v: string) => void }) {
   const [v, setV] = useState(value || "");
   return (
     <input
-      className="w-full min-w-[140px] h-7 px-2 text-xs border border-gray-200 rounded bg-white focus:ring-1 focus:ring-zoca-blue focus:outline-none"
+      className="w-full min-w-[140px] h-7 px-2 text-xs border border-zoca-stroke rounded-md bg-white focus:ring-1 focus:ring-zoca-purple/30 focus:border-zoca-purple focus:outline-none transition-colors"
       value={v}
       onChange={(e) => setV(e.target.value)}
       onBlur={() => v !== value && onSave(v)}
@@ -53,15 +57,16 @@ function EditableText({
 
 function EditableSelect({
   value, options, onSave, styleFn
-}: { value: string; options: string[]; onSave: (v: string) => void; styleFn?: (v: string) => string }) {
+}: { value: string; options: string[]; onSave: (v: string) => void; styleFn?: (v: string) => React.CSSProperties }) {
   return (
     <select
-      className={`h-7 text-xs border border-gray-200 rounded bg-white focus:ring-1 focus:ring-zoca-blue focus:outline-none ${styleFn?.(value) || ""}`}
+      className="h-7 text-xs border border-zoca-stroke rounded-md bg-white focus:ring-1 focus:ring-zoca-purple/30 focus:outline-none px-1 font-medium transition-colors"
+      style={styleFn?.(value) || {}}
       value={value || ""}
       onChange={(e) => onSave(e.target.value)}
     >
-      <option value="">—</option>
-      {options.map((o) => <option key={o} value={o}>{o}</option>)}
+      <option value="" style={{ background: "#fff", color: "#5d5d5d" }}>—</option>
+      {options.map((o) => <option key={o} value={o} style={{ background: "#fff", color: "#0b051d" }}>{o}</option>)}
     </select>
   );
 }
@@ -100,7 +105,7 @@ export default function InvoicesTable({
   }
 
   return (
-    <div className="overflow-x-auto border border-gray-200 rounded-lg bg-white">
+    <div className="overflow-x-auto card-zoca !p-0">
       <table className="zoca-tbl w-full" style={{ minWidth: 1900 }}>
         <thead>
           <tr>
@@ -129,19 +134,19 @@ export default function InvoicesTable({
         </thead>
         <tbody>
           {loading && (
-            <tr><td colSpan={21} className="text-center text-gray-400 py-6 text-sm">Loading…</td></tr>
+            <tr><td colSpan={21} className="text-center text-zoca-neutral40 py-8">Loading…</td></tr>
           )}
           {!loading && sorted.length === 0 && (
-            <tr><td colSpan={21} className="text-center text-gray-400 py-6 text-sm">No invoices match these filters.</td></tr>
+            <tr><td colSpan={21} className="text-center text-zoca-neutral40 py-8">No invoices match these filters.</td></tr>
           )}
           {sorted.map((r) => {
             const a = annotations[r.invoiceNumber] || {};
             const isMulti = multiMonthSet.has(r.entityId || r.customerId);
             return (
-              <tr key={r.invoiceNumber} className={isMulti ? "bg-amber-50/40" : ""}>
-                <td className="font-mono text-[11px]">{r.customerId}</td>
-                <td className="font-mono text-[11px] text-gray-500">{r.entityId}</td>
-                <td>{r.bizName}</td>
+              <tr key={r.invoiceNumber} className={isMulti ? "multi-month" : ""}>
+                <td className="font-mono text-[11px] text-zoca-neutral40">{r.customerId}</td>
+                <td className="font-mono text-[11px] text-zoca-neutral40">{r.entityId}</td>
+                <td className="font-medium text-zoca-purpleDark">{r.bizName}</td>
                 <td>{r.amName}</td>
                 <td>{r.subscriptionStatus}</td>
                 <td>{r.cancellingAt}</td>
@@ -154,7 +159,10 @@ export default function InvoicesTable({
                 <td>{r.customerEmail}</td>
                 <td className="whitespace-nowrap">{r.phoneNumber}</td>
                 <td>{r.customerCompany}</td>
-                <td className="text-right tabular-nums">{fmt(r.amountDue)}{" "}<StatusPill s={r.status} /></td>
+                <td className="text-right tabular-nums whitespace-nowrap">
+                  <span className="font-semibold mr-2">{fmt(r.amountDue)}</span>
+                  <StatusPill s={r.status} />
+                </td>
                 <td>
                   <EditableSelect
                     value={a.caller || ""}

@@ -11,7 +11,7 @@ const HEADERS_EXTRA = ["Caller","Connection status","Comments","Old comments","T
 
 const HEADER_STYLE = {
   font: { name: "Arial", sz: 11, bold: true, color: { rgb: "FFFFFFFF" } },
-  fill: { fgColor: { rgb: "FF4472C4" }, patternType: "solid" },
+  fill: { fgColor: { rgb: "FF1F0843" }, patternType: "solid" },
   alignment: { horizontal: "center", vertical: "center" }
 };
 
@@ -84,7 +84,6 @@ export default function ExportButton({
     }
 
     const today = new Date();
-    const stamp = `${today.toLocaleString("en-US", { month: "long" })} ${ordinal(today.getDate())} ${today.getFullYear()}`;
     for (const m of months) {
       const mr = rows.filter((r) => r.invoiceMonth === m);
       const data = [
@@ -109,10 +108,7 @@ export default function ExportButton({
   }
 
   return (
-    <button
-      onClick={onExport}
-      className="inline-flex items-center gap-1 px-3 py-1.5 border border-gray-300 rounded-md text-sm bg-white hover:bg-gray-50"
-    >
+    <button onClick={onExport} className="btn-zoca">
       <Download size={14} />
       Export Excel
     </button>
