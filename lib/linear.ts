@@ -115,19 +115,29 @@ export async function fetchOpenFinanceTickets(): Promise<OpenTicket[]> {
   }));
 }
 
+// Match every variant Zoca uses for "entity id" in Linear ticket bodies:
+//   "Entity ID: <uuid>"      (older retention-risk template)
+//   "entity_id <uuid>"        (newer template, no colon, underscored)
+//   "entity_id: <uuid>"
+//   "entity-id <uuid>"
+//   "(entity_id <uuid>)"      (parenthetical variant — see FIN-3730)
+// `g` flag so we can pull every entity_id when a ticket mentions multiple.
 const ENTITY_REGEX =
-  /Entity ID:\s*([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i;
+  /entity[\s_-]?id[\s:]+([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/gi;
 const S3_REGEX =
   /zoca-miscellaneous-production\.s3\.amazonaws\.com\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/gi;
 
 /** Resolve every entity_id this ticket plausibly belongs to. Order:
- *  Customer Needs → "Entity ID:" regex → S3 URL parse. */
+ *  Customer Needs → entity_id regex (multi-variant) → S3 URL parse. */
 export function entityIdsForTicket(t: OpenTicket): Set<string> {
   const ids = new Set<string>();
   for (const id of t.customerExternalIds) ids.add(id.toLowerCase());
-  const m = t.description.match(ENTITY_REGEX);
-  if (m && m[1]) ids.add(m[1].toLowerCase());
-  // Iterate all S3 URL matches in the description.
+  // Reset both global regex `lastIndex` before iterating — without this,
+  // back-to-back calls on the same module-level regex skip matches.
+  ENTITY_REGEX.lastIndex = 0;
+  for (const match of t.description.matchAll(ENTITY_REGEX)) {
+    if (match[1]) ids.add(match[1].toLowerCase());
+  }
   S3_REGEX.lastIndex = 0;
   for (const match of t.description.matchAll(S3_REGEX)) {
     if (match[1]) ids.add(match[1].toLowerCase());
