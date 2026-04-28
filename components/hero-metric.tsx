@@ -41,10 +41,10 @@ export default function HeroMetric({
       className="rounded-3xl px-8 py-10 md:px-10 md:py-12 relative overflow-hidden hero-glow"
       style={{
         background:
-          "linear-gradient(135deg, rgba(120,104,244,0.12) 0%, rgba(255,168,205,0.12) 50%, rgba(77,101,255,0.06) 100%), #ffffff",
+          "linear-gradient(135deg, rgba(120,104,244,0.16) 0%, rgba(255,168,205,0.12) 50%, rgba(77,101,255,0.10) 100%), #110d24",
         backgroundSize: "200% 200%, 100%",
-        border: "1px solid #e9e3f5",
-        boxShadow: "0 4px 20px rgba(31,8,67,0.06)"
+        border: "1px solid #2a2451",
+        boxShadow: "0 8px 28px rgba(0,0,0,0.30)"
       }}
     >
       <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-6 md:gap-10 items-start">
@@ -89,7 +89,7 @@ export default function HeroMetric({
                 cy="30"
                 r={radius}
                 fill="none"
-                stroke="#ece6f7"
+                stroke="#2a2451"
                 strokeWidth={stroke}
               />
               <circle

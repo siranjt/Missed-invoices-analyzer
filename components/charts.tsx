@@ -19,24 +19,24 @@ import type { FilterState } from "./filters";
 const PINK = "#ffa8cd";
 const PURPLE = "#7868f4";
 const LAVENDER = "#c4b5e8";
-const TRACK = "#ece6f7"; // light track for donuts
-const AXIS = "#6b5b8e"; // muted purple-gray on light
-const CYAN = "#06b6d4";
-const ORANGE = "#f97316";
-const GREEN = "#22c55e";
-const AMBER = "#f59e0b";
-const RED = "#ef4444";
+const TRACK = "#221a45"; // dark track for donuts
+const AXIS = "#a89cc6"; // muted purple-gray on dark
+const CYAN = "#22d3ee";
+const ORANGE = "#fb923c";
+const GREEN = "#4ade80";
+const AMBER = "#facc15";
+const RED = "#f87171";
 
 const TOOLTIP_STYLE = {
-  background: "#ffffff",
-  border: "1px solid #d8cef0",
-  borderRadius: 8,
-  color: "#1a0e2e",
-  fontSize: 11,
-  boxShadow: "0 4px 12px rgba(31,8,67,0.08)"
+  background: "#110d24",
+  border: "1px solid #2a2451",
+  borderRadius: 10,
+  color: "#f5f0ff",
+  fontSize: 12,
+  boxShadow: "0 8px 24px rgba(0,0,0,0.40)"
 };
-const TOOLTIP_LABEL = { color: "#3d2f5e", fontWeight: 500 };
-const TOOLTIP_ITEM = { color: "#1a0e2e" };
+const TOOLTIP_LABEL = { color: "#cfc4ee", fontWeight: 500 };
+const TOOLTIP_ITEM = { color: "#f5f0ff" };
 
 function fmtUsd(v: number | string) {
   const n = typeof v === "string" ? Number(v) : v;
@@ -178,7 +178,16 @@ export default function Charts({
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={byAm} layout="vertical" margin={{ left: 0, right: 12, top: 4, bottom: 4 }}>
             <XAxis type="number" tickFormatter={(v) => "$" + (v / 1000).toFixed(0) + "k"} fontSize={10} stroke={AXIS} axisLine={false} tickLine={false} />
-            <YAxis type="category" dataKey="name" width={70} fontSize={10} stroke={AXIS} axisLine={false} tickLine={false} />
+            <YAxis
+              type="category"
+              dataKey="name"
+              width={96}
+              fontSize={11}
+              stroke={AXIS}
+              axisLine={false}
+              tickLine={false}
+              interval={0}
+            />
             <Tooltip formatter={(v: any) => fmtUsd(v)} contentStyle={TOOLTIP_STYLE} labelStyle={TOOLTIP_LABEL} itemStyle={TOOLTIP_ITEM} cursor={{ fill: "rgba(120,104,244,0.06)" }} />
             <Bar
               dataKey="value"
@@ -245,7 +254,16 @@ export default function Charts({
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={topCustomers} layout="vertical" margin={{ left: 0, right: 12, top: 4, bottom: 4 }}>
             <XAxis type="number" tickFormatter={(v) => "$" + (v / 1000).toFixed(0) + "k"} fontSize={10} stroke={AXIS} axisLine={false} tickLine={false} />
-            <YAxis type="category" dataKey="name" width={120} fontSize={9} stroke={AXIS} axisLine={false} tickLine={false} />
+            <YAxis
+              type="category"
+              dataKey="name"
+              width={150}
+              fontSize={10}
+              stroke={AXIS}
+              axisLine={false}
+              tickLine={false}
+              interval={0}
+            />
             <Tooltip formatter={(v: any) => fmtUsd(v)} contentStyle={TOOLTIP_STYLE} labelStyle={TOOLTIP_LABEL} itemStyle={TOOLTIP_ITEM} cursor={{ fill: "rgba(120,104,244,0.06)" }} />
             <Bar dataKey="value" fill={ORANGE} radius={[0, 4, 4, 0]} />
           </BarChart>
@@ -259,7 +277,7 @@ export default function Charts({
               {subMix.map((d, i) => (
                 <Cell key={i} fill={d.color} />
               ))}
-              <LabelList dataKey="value" position="outside" fill="#3d2f5e" fontSize={11} />
+              <LabelList dataKey="value" position="outside" fill="#cfc4ee" fontSize={11} />
             </Pie>
             <Legend verticalAlign="bottom" iconSize={8} wrapperStyle={{ fontSize: 10 }} />
             <Tooltip contentStyle={TOOLTIP_STYLE} labelStyle={TOOLTIP_LABEL} itemStyle={TOOLTIP_ITEM} />
@@ -285,7 +303,7 @@ export default function Charts({
               {statusMix.map((_, i) => (
                 <Cell key={i} fill={[PINK, ORANGE][i]} />
               ))}
-              <LabelList dataKey="value" position="outside" fill="#3d2f5e" fontSize={11} />
+              <LabelList dataKey="value" position="outside" fill="#cfc4ee" fontSize={11} />
             </Pie>
             <Legend verticalAlign="bottom" iconSize={8} wrapperStyle={{ fontSize: 10 }} />
             <Tooltip contentStyle={TOOLTIP_STYLE} labelStyle={TOOLTIP_LABEL} itemStyle={TOOLTIP_ITEM} />
@@ -323,7 +341,7 @@ export default function Charts({
               {achSplit.map((_, i) => (
                 <Cell key={i} fill={[CYAN, TRACK][i]} />
               ))}
-              <LabelList dataKey="value" position="outside" fill="#3d2f5e" fontSize={11} />
+              <LabelList dataKey="value" position="outside" fill="#cfc4ee" fontSize={11} />
             </Pie>
             <Legend verticalAlign="bottom" iconSize={8} wrapperStyle={{ fontSize: 10 }} />
             <Tooltip contentStyle={TOOLTIP_STYLE} labelStyle={TOOLTIP_LABEL} itemStyle={TOOLTIP_ITEM} />
@@ -356,7 +374,7 @@ export default function Charts({
               {autoMix.map((_, i) => (
                 <Cell key={i} fill={[GREEN, RED, LAVENDER][i % 3]} />
               ))}
-              <LabelList dataKey="value" position="outside" fill="#3d2f5e" fontSize={11} />
+              <LabelList dataKey="value" position="outside" fill="#cfc4ee" fontSize={11} />
             </Pie>
             <Legend verticalAlign="bottom" iconSize={8} wrapperStyle={{ fontSize: 10 }} />
             <Tooltip contentStyle={TOOLTIP_STYLE} labelStyle={TOOLTIP_LABEL} itemStyle={TOOLTIP_ITEM} />

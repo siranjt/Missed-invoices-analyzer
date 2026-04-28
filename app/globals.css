@@ -3,25 +3,25 @@
 @tailwind utilities;
 
 /* ============================================================
-   Zoca light theme — bright canvas, vibrant accents.
+   Zoca dark theme — vibrant, spacious, alive.
    Montserrat across the board (matches zoca.com).
    JetBrains Mono for IDs and tabular numbers.
    ============================================================ */
 
 html, body {
-  background: #faf9fc;
-  color: #1a0e2e;
+  background: #0a0613;
+  color: #f5f0ff;
   letter-spacing: -0.005em;
 }
 
 body {
   font-family: var(--font-montserrat), Montserrat, ui-sans-serif, system-ui, sans-serif;
   background-image:
-    radial-gradient(70% 35% at 0% 0%, rgba(120, 104, 244, 0.10) 0%, transparent 65%),
-    radial-gradient(60% 35% at 100% 0%, rgba(255, 168, 205, 0.10) 0%, transparent 65%),
-    radial-gradient(45% 35% at 100% 50%, rgba(77, 101, 255, 0.05) 0%, transparent 70%),
-    radial-gradient(50% 35% at 0% 80%, rgba(251, 146, 60, 0.05) 0%, transparent 70%),
-    radial-gradient(60% 40% at 50% 110%, rgba(74, 222, 128, 0.04) 0%, transparent 70%);
+    radial-gradient(70% 35% at 0% 0%, rgba(120, 104, 244, 0.22) 0%, transparent 65%),
+    radial-gradient(60% 35% at 100% 0%, rgba(255, 168, 205, 0.18) 0%, transparent 65%),
+    radial-gradient(45% 35% at 100% 50%, rgba(77, 101, 255, 0.10) 0%, transparent 70%),
+    radial-gradient(50% 35% at 0% 80%, rgba(251, 146, 60, 0.08) 0%, transparent 70%),
+    radial-gradient(60% 40% at 50% 110%, rgba(74, 222, 128, 0.06) 0%, transparent 70%);
   background-attachment: fixed;
   min-height: 100vh;
 }
@@ -30,30 +30,28 @@ h1, h2, h3, .display {
   font-family: var(--font-montserrat), Montserrat, ui-sans-serif, system-ui, sans-serif;
   letter-spacing: -0.025em;
   font-weight: 800;
-  color: #1a0e2e;
+  color: #f5f0ff;
 }
 
 /* ---------- Cards ---------- */
 .card-zoca {
-  background: #ffffff;
-  border: 1px solid #e9e3f5;
+  background: #110d24;
+  border: 1px solid #1f1a3d;
   border-radius: 14px;
   padding: 18px 20px;
-  box-shadow: 0 1px 3px rgba(31, 8, 67, 0.04);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.20);
   transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
 }
 
-/* Optional interactive variant — apply alongside .card-zoca for clickable cards.
-   Lifts subtly on hover, ring pulses to invite a click. */
 .card-zoca-interactive {
   cursor: pointer;
 }
 .card-zoca-interactive:hover {
   transform: translateY(-2px);
   box-shadow:
-    0 6px 20px rgba(31, 8, 67, 0.08),
-    0 1px 3px rgba(31, 8, 67, 0.04);
-  border-color: #d8cef0;
+    0 8px 24px rgba(0, 0, 0, 0.35),
+    0 0 0 1px rgba(120, 104, 244, 0.30);
+  border-color: #3a3070;
 }
 .card-zoca-interactive:active {
   transform: translateY(0);
@@ -73,12 +71,12 @@ h1, h2, h3, .display {
   font-size: 13px;
   border: 1px solid #ffa8cd;
   transition: background .15s ease, transform .15s ease, box-shadow .15s ease;
-  box-shadow: 0 1px 2px rgba(255, 168, 205, 0.30);
+  box-shadow: 0 2px 8px rgba(255, 168, 205, 0.25);
 }
 .btn-zoca:hover {
   background: #f695be;
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(255, 168, 205, 0.40);
+  box-shadow: 0 6px 18px rgba(255, 168, 205, 0.40);
 }
 .btn-zoca:active { transform: translateY(0); }
 .btn-zoca:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
@@ -87,19 +85,19 @@ h1, h2, h3, .display {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: #ffffff;
-  color: #3d2f5e;
+  background: transparent;
+  color: #cfc4ee;
   padding: 9px 16px;
-  border: 1px solid #d8cef0;
+  border: 1px solid #2a2451;
   border-radius: 8px;
   font-weight: 600;
   font-size: 13px;
   transition: background .15s ease, border-color .15s ease, color .15s ease, transform .15s ease;
 }
 .btn-ghost:hover {
-  background: #f5f1fb;
-  border-color: #b9aae0;
-  color: #1a0e2e;
+  background: #1a1438;
+  border-color: #3a3070;
+  color: #f5f0ff;
   transform: translateY(-1px);
 }
 .btn-ghost:active { transform: translateY(0); }
@@ -110,7 +108,7 @@ h1, h2, h3, .display {
   border-radius: 999px;
   font-weight: 600;
   font-size: 13px;
-  color: #6b5b8e;
+  color: #a89cc6;
   background: transparent;
   transition: color .15s ease, background .15s ease;
   border: none;
@@ -119,12 +117,12 @@ h1, h2, h3, .display {
   gap: 6px;
   cursor: pointer;
 }
-.tab-pill:hover { color: #1a0e2e; background: rgba(120, 104, 244, 0.08); }
+.tab-pill:hover { color: #f5f0ff; background: rgba(120, 104, 244, 0.12); }
 .tab-pill[aria-selected="true"] {
   background: #ffa8cd;
   color: #1a0e2e;
   font-weight: 700;
-  box-shadow: 0 1px 4px rgba(255, 168, 205, 0.40);
+  box-shadow: 0 2px 8px rgba(255, 168, 205, 0.30);
 }
 
 /* ---------- Pills ---------- */
@@ -153,8 +151,8 @@ table.zoca-tbl {
   font-family: var(--font-montserrat), Montserrat, sans-serif;
 }
 table.zoca-tbl thead th {
-  background: #f5f1fb;
-  color: #3d2f5e;
+  background: #18133a;
+  color: #cfc4ee;
   font-weight: 700;
   font-size: 10px;
   letter-spacing: 0.10em;
@@ -162,7 +160,7 @@ table.zoca-tbl thead th {
   padding: 12px 14px;
   text-align: left;
   white-space: nowrap;
-  border-bottom: 1px solid #d8cef0;
+  border-bottom: 1px solid #2a2451;
   position: sticky;
   top: 0;
   z-index: 2;
@@ -170,73 +168,73 @@ table.zoca-tbl thead th {
 table.zoca-tbl tbody td {
   font-size: 12px;
   padding: 11px 14px;
-  border-top: 1px solid #ece6f7;
+  border-top: 1px solid #1f1a3d;
   vertical-align: middle;
-  color: #1a0e2e;
+  color: #f5f0ff;
   transition: background .12s ease;
 }
 table.zoca-tbl tbody tr {
   transition: background .12s ease;
 }
-table.zoca-tbl tbody tr:hover { background: #f9f6ff; }
-table.zoca-tbl tbody tr.multi-month { background: rgba(255, 168, 205, 0.10); }
-table.zoca-tbl tbody tr.multi-month:hover { background: rgba(255, 168, 205, 0.18); }
+table.zoca-tbl tbody tr:hover { background: #1a1438; }
+table.zoca-tbl tbody tr.multi-month { background: rgba(255, 168, 205, 0.05); }
+table.zoca-tbl tbody tr.multi-month:hover { background: rgba(255, 168, 205, 0.10); }
 
 /* ---------- Inputs ---------- */
 .input-zoca {
   height: 36px;
   padding: 0 12px;
   font-size: 13px;
-  color: #1a0e2e;
-  background: #ffffff;
-  border: 1px solid #d8cef0;
+  color: #f5f0ff;
+  background: #0d0820;
+  border: 1px solid #2a2451;
   border-radius: 8px;
   transition: border-color .15s ease, box-shadow .15s ease;
   font-family: inherit;
 }
-.input-zoca::placeholder { color: #9b8bc0; }
-.input-zoca:hover { border-color: #b9aae0; }
+.input-zoca::placeholder { color: #6b5b8e; }
+.input-zoca:hover { border-color: #3a3070; }
 .input-zoca:focus {
   outline: none;
   border-color: #4d65ff;
-  box-shadow: 0 0 0 3px rgba(77, 101, 255, 0.15);
+  box-shadow: 0 0 0 3px rgba(77, 101, 255, 0.20);
 }
 
 select.input-zoca {
   appearance: none;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239b8bc0' stroke-width='2'><polyline points='6 9 12 15 18 9'/></svg>");
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b5b8e' stroke-width='2'><polyline points='6 9 12 15 18 9'/></svg>");
   background-repeat: no-repeat;
   background-position: right 10px center;
   padding-right: 30px;
 }
 select.input-zoca option {
-  background: #ffffff;
-  color: #1a0e2e;
+  background: #110d24;
+  color: #f5f0ff;
 }
 
-/* ---------- Recharts overrides (light) ---------- */
+/* ---------- Recharts overrides (dark) ---------- */
 .recharts-tooltip-wrapper {
   outline: none !important;
 }
 .recharts-default-tooltip {
-  background: #ffffff !important;
-  border: 1px solid #d8cef0 !important;
+  background: #110d24 !important;
+  border: 1px solid #2a2451 !important;
   border-radius: 10px !important;
   font-size: 12px !important;
   padding: 8px 12px !important;
-  box-shadow: 0 8px 24px rgba(31, 8, 67, 0.10) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.40) !important;
   font-family: inherit !important;
 }
 .recharts-tooltip-label,
 .recharts-tooltip-item {
-  color: #1a0e2e !important;
+  color: #f5f0ff !important;
 }
 .recharts-cartesian-axis-tick-value {
-  fill: #6b5b8e !important;
+  fill: #a89cc6 !important;
   font-size: 11px !important;
 }
 .recharts-legend-item-text {
-  color: #3d2f5e !important;
+  color: #cfc4ee !important;
   font-size: 11px !important;
 }
 .recharts-pie-sector,
@@ -251,8 +249,8 @@ select.input-zoca option {
 /* ---------- Scrollbars ---------- */
 ::-webkit-scrollbar { width: 10px; height: 10px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #d8cef0; border-radius: 999px; border: 2px solid #faf9fc; }
-::-webkit-scrollbar-thumb:hover { background: #b9aae0; }
+::-webkit-scrollbar-thumb { background: #2a2451; border-radius: 999px; border: 2px solid #0a0613; }
+::-webkit-scrollbar-thumb:hover { background: #3a3070; }
 
 /* ---------- Tabular numerals on .num ---------- */
 .tabnum { font-variant-numeric: tabular-nums; }

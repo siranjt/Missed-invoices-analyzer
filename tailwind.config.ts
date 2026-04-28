@@ -5,40 +5,41 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Zoca light — clean, vibrant, same Bricolage/Inter/JetBrains Mono fonts.
+        // Zoca dark — modern, vibrant, spacious. Montserrat across the board.
         zoca: {
           // Canvas + surfaces
-          canvas: "#faf9fc", // subtle lavender-tinted off-white
-          surface: "#ffffff", // pure white card
-          surfaceHover: "#f5f1fb",
-          thead: "#f5f1fb", // light lavender table header
-          searchBg: "#ffffff",
-          trackBg: "#ece6f7", // light track for chart bar backgrounds
+          canvas: "#0a0613",         // page background
+          surface: "#110d24",         // card / table fill
+          surfaceHover: "#1a1438",    // row hover
+          thead: "#18133a",           // table header
+          searchBg: "#0d0820",        // input background
+          trackBg: "#221a45",         // chart bar/donut tracks
 
           // Borders
-          border: "#e9e3f5",
-          borderStrong: "#d8cef0",
+          border: "#1f1a3d",
+          borderStrong: "#2a2451",
 
-          // Text (dark on light)
-          text: "#1a0e2e", // primary
-          textSecondary: "#3d2f5e",
-          textMuted: "#6b5b8e",
-          textDim: "#9b8bc0",
+          // Text
+          text: "#f5f0ff",            // primary on dark
+          textSecondary: "#cfc4ee",
+          textMuted: "#a89cc6",
+          textDim: "#6b5b8e",
 
-          // Brand accents (kept saturated; sourced from zoca.com)
+          // Brand accents (sourced from zoca.com)
           pink: "#ffa8cd",
           pinkHover: "#f695be",
-          pinkInk: "#1a0e2e", // text on pink button
+          pinkInk: "#1a0e2e",         // text on pink button
           purple: "#7868f4",
           purpleDeep: "#1f0843",
           lavender: "#c4b5e8",
-          blue: "#4d65ff", // zoca.com focus state blue
+          blue: "#4d65ff",            // zoca.com focus state blue
 
           // Semantic
-          green: "#22c55e",
-          red: "#ef4444",
-          amber: "#f59e0b",
-          cyan: "#06b6d4"
+          green: "#4ade80",
+          red: "#f87171",
+          amber: "#facc15",
+          orange: "#fb923c",
+          cyan: "#22d3ee"
         }
       },
       fontFamily: {

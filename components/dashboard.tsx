@@ -274,7 +274,7 @@ export default function Dashboard() {
       {/* Top wordmark band — actual Zoca logo SVG */}
       <div className="flex items-center justify-between text-[12px] text-zoca-textMuted">
         <div className="flex items-center gap-3">
-          <ZocaLogo height={22} fill="#1f0843" />
+          <ZocaLogo height={22} fill="#f5f0ff" />
           <span className="text-zoca-textDim">·  Missed invoice tracker</span>
         </div>
         <div className="flex items-center gap-4">
