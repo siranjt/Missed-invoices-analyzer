@@ -17,6 +17,10 @@ table.zoca-tbl thead th {
   text-align: left;
   white-space: nowrap;
   border-bottom: 1px solid rgba(255,255,255,0.05);
+  /* Sticky on vertical scroll inside the table wrapper. */
+  position: sticky;
+  top: 0;
+  z-index: 2;
 }
 table.zoca-tbl thead th:first-child { border-top-left-radius: 8px; }
 table.zoca-tbl thead th:last-child  { border-top-right-radius: 8px; }

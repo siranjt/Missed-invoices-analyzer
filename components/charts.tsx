@@ -25,7 +25,13 @@ function ChartCard({ title, subtitle, height = 240, children }: any) {
   );
 }
 
-export default function Charts({ rows }: { rows: InvoiceRow[] }) {
+export default function Charts({
+  rows,
+  onAmClick
+}: {
+  rows: InvoiceRow[];
+  onAmClick?: (amName: string) => void;
+}) {
   // 1. Outstanding by AM (top 10, horizontal bar)
   const byAmMap = new Map<string, number>();
   rows.forEach((r) => {
@@ -79,13 +85,29 @@ export default function Charts({ rows }: { rows: InvoiceRow[] }) {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-      <ChartCard title="Outstanding by AM" subtitle="Top 10">
+      <ChartCard
+        title="Outstanding by AM"
+        subtitle={onAmClick ? "Top 10 · click a bar to drill down" : "Top 10"}
+      >
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={byAm} layout="vertical" margin={{ left: 8, right: 16 }}>
             <XAxis type="number" tickFormatter={(v) => "$" + (v / 1000).toFixed(0) + "k"} fontSize={11} stroke="#5d5d5d" />
             <YAxis type="category" dataKey="name" width={90} fontSize={11} stroke="#5d5d5d" />
             <Tooltip formatter={(v: any) => fmtUsd(v)} contentStyle={{ borderRadius: 8, border: "1px solid #e7e7e7" }} />
-            <Bar dataKey="value" fill="#ffa8cd" radius={[0, 4, 4, 0]} />
+            <Bar
+              dataKey="value"
+              fill="#ffa8cd"
+              radius={[0, 4, 4, 0]}
+              cursor={onAmClick ? "pointer" : undefined}
+              onClick={
+                onAmClick
+                  ? (d: any) => {
+                      const name = d?.name || d?.payload?.name;
+                      if (name && name !== "(unassigned)") onAmClick(name);
+                    }
+                  : undefined
+              }
+            />
           </BarChart>
         </ResponsiveContainer>
       </ChartCard>

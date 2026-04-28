@@ -76,13 +76,15 @@ export default function InvoicesTable({
   annotations,
   onSave,
   loading,
-  multiMonthSet
+  multiMonthSet,
+  onAmClick
 }: {
   rows: InvoiceRow[];
   annotations: AnnotationsMap;
   onSave: (invoiceNumber: string, patch: InvoiceAnnotation) => void;
   loading: boolean;
   multiMonthSet: Set<string>;
+  onAmClick?: (amName: string) => void;
 }) {
   const [sort, setSort] = useState<{ key: SortKey; dir: 1 | -1 }>({ key: "invoiceDate", dir: -1 });
 
@@ -105,7 +107,10 @@ export default function InvoicesTable({
   }
 
   return (
-    <div className="overflow-x-auto card-zoca !p-0">
+    <div
+      className="overflow-auto card-zoca !p-0"
+      style={{ maxHeight: "calc(100vh - 220px)", minHeight: 320 }}
+    >
       <table className="zoca-tbl w-full" style={{ minWidth: 1900 }}>
         <thead>
           <tr>
@@ -147,7 +152,20 @@ export default function InvoicesTable({
                 <td className="font-mono text-[11px] text-zoca-neutral40">{r.customerId}</td>
                 <td className="font-mono text-[11px] text-zoca-neutral40">{r.entityId}</td>
                 <td className="font-medium text-zoca-purpleDark">{r.bizName}</td>
-                <td>{r.amName}</td>
+                <td>
+                  {onAmClick && r.amName ? (
+                    <button
+                      type="button"
+                      onClick={() => onAmClick(r.amName)}
+                      className="text-zoca-purpleDark hover:text-zoca-pink hover:underline underline-offset-2 transition-colors"
+                      title={`Filter by ${r.amName}`}
+                    >
+                      {r.amName}
+                    </button>
+                  ) : (
+                    r.amName
+                  )}
+                </td>
                 <td>{r.subscriptionStatus}</td>
                 <td>{r.cancellingAt}</td>
                 <td className="font-mono text-[11px]">{r.invoiceNumber}</td>

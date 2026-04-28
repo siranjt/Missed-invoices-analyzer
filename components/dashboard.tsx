@@ -8,20 +8,16 @@ import Filters, { type FilterState } from "./filters";
 import InvoicesTable from "./invoices-table";
 import ExportButton from "./export-button";
 import UserMenu from "./user-menu";
-import { RefreshCw } from "lucide-react";
+import {
+  KpiCardsSkeleton,
+  ChartsSkeleton,
+  FiltersSkeleton,
+  InvoicesTableSkeleton
+} from "./skeletons";
+import { RefreshCw, X } from "lucide-react";
 
 type Tab = "All" | "April" | "March" | "February";
 const TABS: Tab[] = ["All", "April", "March", "February"];
-
-const DEFAULT_FILTERS: FilterState = {
-  q: "",
-  am: "",
-  status: "",
-  month: "",
-  ach: "",
-  autoDebit: "",
-  multiOnly: false
-};
 
 function parseTab(v: string | null): Tab {
   return v === "April" || v === "March" || v === "February" ? v : "All";
@@ -77,8 +73,48 @@ export default function Dashboard() {
     setError(null);
     try {
       const r = await fetch(`/api/invoices${refresh ? "?refresh=1" : ""}`);
+      if (!r.ok) {
+        const txt = await r.text();
+        throw new Error(txt || `Failed to load invoices (${r.status})`);
+      }
+      const ct = r.headers.get("content-type") || "";
+
+      // Streaming NDJSON: progressive partial → complete.
+      if (ct.includes("ndjson") && r.body) {
+        const reader = r.body.getReader();
+        const decoder = new TextDecoder();
+        let buf = "";
+        let gotAny = false;
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) break;
+          buf += decoder.decode(value, { stream: true });
+          const lines = buf.split("\n");
+          buf = lines.pop() ?? "";
+          for (const raw of lines) {
+            const line = raw.trim();
+            if (!line) continue;
+            let msg: any;
+            try { msg = JSON.parse(line); } catch { continue; }
+            if (msg.type === "partial" || msg.type === "complete") {
+              setRows(msg.rows || []);
+              if (msg.fetchedAt) setFetchedAt(msg.fetchedAt);
+              gotAny = true;
+              if (msg.type === "partial") {
+                // We have something on screen now — stop the skeleton.
+                setLoading(false);
+              }
+            } else if (msg.type === "error") {
+              throw new Error(msg.error || "Stream error");
+            }
+          }
+        }
+        if (!gotAny) throw new Error("Empty response from /api/invoices");
+        return;
+      }
+
+      // Fallback: plain JSON (e.g. unexpected proxy transformation).
       const data = await r.json();
-      if (!r.ok) throw new Error(data?.error || "Failed to load invoices");
       setRows(data.rows || []);
       setFetchedAt(data.fetchedAt || null);
     } catch (e: any) {
@@ -161,6 +197,11 @@ export default function Dashboard() {
     });
   }, [tabFiltered, filters, multiMonthSet]);
 
+  // Show skeletons only on the first paint, when we have no data at all yet.
+  // Subsequent refreshes keep the existing UI and rely on the Refresh-button
+  // spinner for feedback.
+  const firstLoad = loading && rows.length === 0;
+
   const tabCounts = useMemo(() => {
     const m: Record<Tab, number> = { All: rows.length, April: 0, March: 0, February: 0 };
     for (const r of rows) {
@@ -170,6 +211,16 @@ export default function Dashboard() {
     }
     return m;
   }, [rows]);
+
+  // Drill-down: click an AM (in chart or table) to filter to that AM and
+  // scroll the table into view.
+  const tableRef = useRef<HTMLDivElement>(null);
+  function handleAmClick(amName: string) {
+    setFilters((f) => ({ ...f, am: amName }));
+    requestAnimationFrame(() => {
+      tableRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  }
 
   async function saveAnnotation(invoiceNumber: string, patch: any) {
     setAnnotations((prev) => ({
@@ -230,16 +281,49 @@ export default function Dashboard() {
         ))}
       </div>
 
-      <KpiCards rows={filtered} multiMonthSet={multiMonthSet} />
-      <Charts rows={filtered} />
-      <Filters value={filters} onChange={setFilters} rows={rows} />
-      <InvoicesTable
-        rows={filtered}
-        annotations={annotations}
-        onSave={saveAnnotation}
-        loading={loading}
-        multiMonthSet={multiMonthSet}
-      />
+      {firstLoad ? (
+        <>
+          <KpiCardsSkeleton />
+          <ChartsSkeleton />
+          <FiltersSkeleton />
+          <InvoicesTableSkeleton />
+        </>
+      ) : (
+        <>
+          <KpiCards rows={filtered} multiMonthSet={multiMonthSet} />
+          <Charts rows={filtered} onAmClick={handleAmClick} />
+          <Filters value={filters} onChange={setFilters} rows={rows} />
+          {filters.am && (
+            <div className="flex items-center gap-2 text-xs">
+              <span className="text-zoca-neutral40">Drilled into AM:</span>
+              <span
+                className="pill"
+                style={{ background: "#ece6ff", color: "#3b1e7a" }}
+              >
+                {filters.am}
+              </span>
+              <button
+                type="button"
+                onClick={() => setFilters((f) => ({ ...f, am: "" }))}
+                className="inline-flex items-center gap-1 text-zoca-neutral40 hover:text-zoca-purpleDark transition-colors"
+              >
+                <X size={12} />
+                Clear
+              </button>
+            </div>
+          )}
+          <div ref={tableRef}>
+            <InvoicesTable
+              rows={filtered}
+              annotations={annotations}
+              onSave={saveAnnotation}
+              loading={loading}
+              multiMonthSet={multiMonthSet}
+              onAmClick={handleAmClick}
+            />
+          </div>
+        </>
+      )}
     </div>
   );
 }

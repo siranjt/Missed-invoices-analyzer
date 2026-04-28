@@ -9,16 +9,35 @@ function authHeader() {
   return { Authorization: `Basic ${token}` };
 }
 
+// Hard per-request timeout so a single slow Chargebee endpoint can't stall the
+// whole pipeline against the API route's maxDuration.
+const CB_REQUEST_TIMEOUT_MS = Number(process.env.CHARGEBEE_REQUEST_TIMEOUT_MS || 12_000);
+
 async function cbGet(path: string, params: Record<string, string> = {}) {
   if (!CB_KEY) throw new Error("CHARGEBEE_API_KEY not set");
   const qs = new URLSearchParams(params).toString();
   const url = `${CB_BASE}${path}${qs ? "?" + qs : ""}`;
-  const r = await fetch(url, { headers: { ...authHeader() }, cache: "no-store" });
-  if (!r.ok) {
-    const text = await r.text();
-    throw new Error(`Chargebee ${r.status} on ${path}: ${text.slice(0, 300)}`);
+  const ctrl = new AbortController();
+  const timeout = setTimeout(() => ctrl.abort(), CB_REQUEST_TIMEOUT_MS);
+  try {
+    const r = await fetch(url, {
+      headers: { ...authHeader() },
+      cache: "no-store",
+      signal: ctrl.signal
+    });
+    if (!r.ok) {
+      const text = await r.text();
+      throw new Error(`Chargebee ${r.status} on ${path}: ${text.slice(0, 300)}`);
+    }
+    return r.json();
+  } catch (e: any) {
+    if (e?.name === "AbortError") {
+      throw new Error(`Chargebee timeout on ${path} after ${CB_REQUEST_TIMEOUT_MS}ms`);
+    }
+    throw e;
+  } finally {
+    clearTimeout(timeout);
   }
-  return r.json();
 }
 
 async function paginate(path: string, baseParams: Record<string, string>) {
@@ -55,7 +74,7 @@ async function chunked<T, R>(items: T[], size: number, fn: (x: T) => Promise<R>)
 
 export async function fetchCustomers(ids: string[]) {
   const unique = Array.from(new Set(ids.filter(Boolean)));
-  return chunked(unique, 8, async (id) => {
+  return chunked(unique, 16, async (id) => {
     try {
       const data = await cbGet(`/customers/${encodeURIComponent(id)}`);
       return data.customer;
@@ -67,7 +86,7 @@ export async function fetchCustomers(ids: string[]) {
 
 export async function fetchSubscriptions(ids: string[]) {
   const unique = Array.from(new Set(ids.filter(Boolean)));
-  return chunked(unique, 8, async (id) => {
+  return chunked(unique, 16, async (id) => {
     try {
       const data = await cbGet(`/subscriptions/${encodeURIComponent(id)}`);
       return data.subscription;
