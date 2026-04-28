@@ -88,6 +88,15 @@ export async function GET(req: NextRequest) {
         const baseSheet = indexBaseSheet(baseRows);
         const ticketsByEntity = indexTicketsByEntity(tickets);
 
+        // TEMP DIAGNOSTIC — remove once Tickets column is verified populating.
+        console.log(
+          `[invoices] linear: fetched=${tickets.length} indexed_entities=${ticketsByEntity.size}` +
+            ` first_5=${tickets
+              .slice(0, 5)
+              .map((t) => `${t.id}{cust=${t.customerExternalIds.length}}`)
+              .join(",")}`
+        );
+
         // Phase 1: emit partial rows enriched from BaseSheet + tickets so the
         // UI has something to render quickly with ticket links already wired.
         const partial = buildInvoiceRows({
