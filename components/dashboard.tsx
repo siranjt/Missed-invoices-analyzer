@@ -11,6 +11,7 @@ import Filters, { type FilterState } from "./filters";
 import InvoicesTable from "./invoices-table";
 import ExportButton from "./export-button";
 import UserMenu from "./user-menu";
+import ZocaLogo from "./zoca-logo";
 import {
   KpiCardsSkeleton,
   ChartsSkeleton,
@@ -225,6 +226,35 @@ export default function Dashboard() {
     });
   }
 
+  /** Generic filter-patch applier. Used by KPI cards and chart slices to
+   *  drill into the table from anywhere on the dashboard. Toggles off if
+   *  the patch matches the current filter (so clicking the same KPI twice
+   *  clears it). */
+  function applyFilter(patch: Partial<FilterState>) {
+    setFilters((f) => {
+      const next = { ...f };
+      let allMatch = true;
+      for (const k in patch) {
+        const key = k as keyof FilterState;
+        if ((next[key] as any) !== (patch[key] as any)) allMatch = false;
+      }
+      // Toggle: clicking again clears just the keys in the patch.
+      if (allMatch) {
+        for (const k in patch) {
+          const key = k as keyof FilterState;
+          if (typeof patch[key] === "boolean") (next as any)[key] = false;
+          else (next as any)[key] = "";
+        }
+      } else {
+        Object.assign(next, patch);
+      }
+      return next;
+    });
+    requestAnimationFrame(() => {
+      tableRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  }
+
   async function saveAnnotation(invoiceNumber: string, patch: any) {
     setAnnotations((prev) => ({
       ...prev,
@@ -240,17 +270,15 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="space-y-8">
-      {/* Top wordmark band */}
+    <div className="space-y-10">
+      {/* Top wordmark band — actual Zoca logo SVG */}
       <div className="flex items-center justify-between text-[12px] text-zoca-textMuted">
-        <div className="flex items-center gap-2.5">
-          <span className="font-display text-zoca-text font-bold tracking-tight text-[16px]">
-            ZOCA
-          </span>
+        <div className="flex items-center gap-3">
+          <ZocaLogo height={22} fill="#1f0843" />
           <span className="text-zoca-textDim">·  Missed invoice tracker</span>
         </div>
         <div className="flex items-center gap-4">
-          <span className="hidden sm:inline">Customer Success team</span>
+          <span className="hidden sm:inline">Finance team</span>
           <span className="text-zoca-textDim">·</span>
           <span className="hidden sm:inline">Live Chargebee + Metabase</span>
           <UserMenu />
@@ -350,11 +378,22 @@ export default function Dashboard() {
           {/* Hero metric card */}
           <HeroMetric rows={filtered} multiMonthSet={multiMonthSet} />
 
-          {/* Sparkline KPI grid */}
-          <KpiSparklineGrid rows={filtered} multiMonthSet={multiMonthSet} />
+          {/* Sparkline KPI grid — clickable, each tile drills into the table */}
+          <KpiSparklineGrid
+            rows={filtered}
+            multiMonthSet={multiMonthSet}
+            onCardClick={applyFilter}
+          />
 
-          {/* Existing charts grid (kept) */}
-          <Charts rows={filtered} onAmClick={handleAmClick} />
+          {/* Charts grid — every bar / slice is clickable */}
+          <Charts
+            rows={filtered}
+            onAmClick={handleAmClick}
+            onFilterClick={applyFilter}
+            onMonthClick={(m) => {
+              if (m === "April" || m === "March" || m === "February") setActiveTab(m);
+            }}
+          />
 
           {/* Existing filters bar (kept) */}
           <Filters value={filters} onChange={setFilters} rows={rows} />

@@ -57,7 +57,7 @@ export default function MemberChips({
           <button
             key={am}
             onClick={() => onSelect(active ? "" : am)}
-            className={`inline-flex items-center gap-2 pl-2.5 pr-3.5 py-1 rounded-full border text-[12px] font-medium transition-colors`}
+            className="chip-zoca inline-flex items-center gap-2 pl-3 pr-4 py-1.5 rounded-full border text-[12.5px] font-semibold transition-colors"
             style={{
               borderColor: active ? c : `${c}55`,
               color: c,

@@ -25,13 +25,14 @@ const config: Config = {
           textMuted: "#6b5b8e",
           textDim: "#9b8bc0",
 
-          // Brand accents (kept saturated)
+          // Brand accents (kept saturated; sourced from zoca.com)
           pink: "#ffa8cd",
           pinkHover: "#f695be",
           pinkInk: "#1a0e2e", // text on pink button
           purple: "#7868f4",
           purpleDeep: "#1f0843",
           lavender: "#c4b5e8",
+          blue: "#4d65ff", // zoca.com focus state blue
 
           // Semantic
           green: "#22c55e",
@@ -41,9 +42,10 @@ const config: Config = {
         }
       },
       fontFamily: {
-        sans: ["var(--font-inter)", "Inter", "ui-sans-serif", "system-ui", "sans-serif"],
-        mono: ["var(--font-mono)", "JetBrains Mono", "ui-monospace", "monospace"],
-        display: ["var(--font-display)", "Bricolage Grotesque", "ui-sans-serif", "system-ui", "sans-serif"]
+        // Montserrat across the board, matching zoca.com.
+        sans: ["var(--font-montserrat)", "Montserrat", "ui-sans-serif", "system-ui", "sans-serif"],
+        display: ["var(--font-montserrat)", "Montserrat", "ui-sans-serif", "system-ui", "sans-serif"],
+        mono: ["var(--font-mono)", "JetBrains Mono", "ui-monospace", "monospace"]
       },
       borderRadius: {
         zoca: "0.5rem"

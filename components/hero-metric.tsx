@@ -38,12 +38,13 @@ export default function HeroMetric({
 
   return (
     <div
-      className="rounded-2xl px-6 py-7 md:px-8 md:py-8 relative overflow-hidden"
+      className="rounded-3xl px-8 py-10 md:px-10 md:py-12 relative overflow-hidden hero-glow"
       style={{
         background:
-          "linear-gradient(135deg, rgba(120,104,244,0.10) 0%, rgba(255,168,205,0.10) 50%, rgba(34,211,238,0.06) 100%), #ffffff",
+          "linear-gradient(135deg, rgba(120,104,244,0.12) 0%, rgba(255,168,205,0.12) 50%, rgba(77,101,255,0.06) 100%), #ffffff",
+        backgroundSize: "200% 200%, 100%",
         border: "1px solid #e9e3f5",
-        boxShadow: "0 1px 3px rgba(31,8,67,0.05)"
+        boxShadow: "0 4px 20px rgba(31,8,67,0.06)"
       }}
     >
       <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-6 md:gap-10 items-start">
@@ -54,12 +55,12 @@ export default function HeroMetric({
             Total outstanding
           </div>
           <div
-            className="font-display font-bold leading-none tabnum mt-3"
-            style={{ fontSize: "clamp(44px, 6vw, 64px)" }}
+            className="font-display font-extrabold leading-none tabnum mt-4"
+            style={{ fontSize: "clamp(52px, 7vw, 80px)", letterSpacing: "-0.03em" }}
           >
             {fmtUsd(outstanding)}
           </div>
-          <div className="text-[13px] text-zoca-textSecondary mt-3">
+          <div className="text-[14px] text-zoca-textSecondary mt-4">
             across{" "}
             <span className="text-zoca-text font-medium">
               {total.toLocaleString()} invoices

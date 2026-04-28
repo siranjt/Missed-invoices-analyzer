@@ -1,6 +1,7 @@
 "use client";
 import { useMemo } from "react";
 import type { InvoiceRow } from "@/lib/types";
+import type { FilterState } from "./filters";
 
 function fmtUsd(n: number) {
   return "$" + Math.round(n).toLocaleString();
@@ -79,10 +80,13 @@ function Sparkline({
 
 export default function KpiSparklineGrid({
   rows,
-  multiMonthSet
+  multiMonthSet,
+  onCardClick
 }: {
   rows: InvoiceRow[];
   multiMonthSet: Set<string>;
+  /** Click on any KPI tile fires this with the filter patch the tile represents. */
+  onCardClick?: (patch: Partial<FilterState>) => void;
 }) {
   const series = useMemo(() => weeklyBuckets(rows, 12), [rows]);
 
@@ -102,6 +106,8 @@ export default function KpiSparklineGrid({
     sub: string;
     spark: number[];
     color: string;
+    /** Filter patch applied when this tile is clicked. */
+    filter?: Partial<FilterState>;
   }[] = [
     {
       label: "Tickets in window",
@@ -109,6 +115,7 @@ export default function KpiSparklineGrid({
       sub: `across ${customers} customers`,
       spark: series.map((s) => s.count),
       color: "#a78bfa"
+      // No filter — tile is informational only.
     },
     {
       label: "Outstanding",
@@ -122,27 +129,37 @@ export default function KpiSparklineGrid({
       value: ach.toLocaleString(),
       sub: total ? `${Math.round((ach / total) * 100)}% of window` : "0%",
       spark: series.map((s) => s.ach),
-      color: "#7868f4"
+      color: "#7868f4",
+      filter: { ach: "in_progress" }
     },
     {
       label: "Multi-month",
       value: reassigned.toLocaleString(),
       sub: "customers spanning ≥2 months",
       spark: series.map((s) => s.customers),
-      color: "#c4b5e8"
+      color: "#c4b5e8",
+      filter: { multiOnly: true }
     }
   ];
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-      {cards.map((c) => (
-        <div
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      {cards.map((c) => {
+        const clickable = !!(c.filter && onCardClick);
+        const Tag = clickable ? "button" : "div";
+        return (
+        <Tag
           key={c.label}
-          className="rounded-xl p-4 relative overflow-hidden"
+          type={clickable ? ("button" as const) : undefined}
+          onClick={clickable ? () => onCardClick!(c.filter!) : undefined}
+          className={`rounded-xl p-5 relative overflow-hidden text-left w-full ${
+            clickable ? "card-zoca-interactive" : ""
+          }`}
           style={{
             background: `linear-gradient(180deg, ${c.color}14 0%, #ffffff 70%)`,
             border: `1px solid ${c.color}33`,
-            boxShadow: `0 1px 2px rgba(31,8,67,0.04)`
+            boxShadow: `0 1px 2px rgba(31,8,67,0.04)`,
+            transition: "transform .18s ease, box-shadow .18s ease, border-color .18s ease"
           }}
         >
           {/* Colored top accent bar */}
@@ -163,13 +180,14 @@ export default function KpiSparklineGrid({
             </div>
             <span className="text-zoca-textDim text-[14px] leading-none">→</span>
           </div>
-          <div className="font-display text-[28px] font-bold leading-tight mt-2 tabnum">
+          <div className="font-display text-[32px] font-bold leading-tight mt-3 tabnum">
             {c.value}
           </div>
-          <div className="text-[11px] text-zoca-textMuted mt-1">{c.sub}</div>
+          <div className="text-[11.5px] text-zoca-textMuted mt-1">{c.sub}</div>
           <Sparkline values={c.spark} color={c.color} />
-        </div>
-      ))}
+        </Tag>
+        );
+      })}
     </div>
   );
 }

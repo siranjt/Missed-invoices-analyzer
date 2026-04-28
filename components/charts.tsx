@@ -14,6 +14,7 @@ import {
 } from "recharts";
 import type { InvoiceRow } from "@/lib/types";
 import { colorFor } from "./member-chips";
+import type { FilterState } from "./filters";
 
 const PINK = "#ffa8cd";
 const PURPLE = "#7868f4";
@@ -73,10 +74,14 @@ function daysOverdue(invoiceDate: string): number {
 
 export default function Charts({
   rows,
-  onAmClick
+  onAmClick,
+  onFilterClick,
+  onMonthClick
 }: {
   rows: InvoiceRow[];
   onAmClick?: (amName: string) => void;
+  onFilterClick?: (patch: Partial<FilterState>) => void;
+  onMonthClick?: (month: string) => void;
 }) {
   // 1. Outstanding by AM (top 10)
   const byAmMap = new Map<string, number>();
@@ -196,13 +201,26 @@ export default function Charts({
         </ResponsiveContainer>
       </ChartCard>
 
-      <ChartCard title="Outstanding by month" subtitle="Visible rows">
+      <ChartCard title="Outstanding by month" subtitle={onMonthClick ? "click to switch tab" : "visible rows"}>
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={byMonth} margin={{ left: 0, right: 8, top: 4, bottom: 4 }}>
             <XAxis dataKey="name" fontSize={10} stroke={AXIS} axisLine={false} tickLine={false} />
             <YAxis tickFormatter={(v) => "$" + (v / 1000).toFixed(0) + "k"} fontSize={10} stroke={AXIS} axisLine={false} tickLine={false} />
             <Tooltip formatter={(v: any) => fmtUsd(v)} contentStyle={TOOLTIP_STYLE} labelStyle={TOOLTIP_LABEL} itemStyle={TOOLTIP_ITEM} cursor={{ fill: "rgba(120,104,244,0.06)" }} />
-            <Bar dataKey="value" fill={CYAN} radius={[4, 4, 0, 0]} />
+            <Bar
+              dataKey="value"
+              fill={CYAN}
+              radius={[4, 4, 0, 0]}
+              cursor={onMonthClick ? "pointer" : undefined}
+              onClick={
+                onMonthClick
+                  ? (d: any) => {
+                      const name = d?.name || d?.payload?.name;
+                      if (name) onMonthClick(name);
+                    }
+                  : undefined
+              }
+            />
           </BarChart>
         </ResponsiveContainer>
       </ChartCard>
@@ -250,10 +268,20 @@ export default function Charts({
       </ChartCard>
 
       {/* Row 3 */}
-      <ChartCard title="Status mix" subtitle="payment_due vs not_paid">
+      <ChartCard title="Status mix" subtitle={onFilterClick ? "click a slice to filter" : "payment_due vs not_paid"}>
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
-            <Pie data={statusMix} dataKey="value" nameKey="name" innerRadius={42} outerRadius={72} paddingAngle={2} stroke="none">
+            <Pie
+              data={statusMix}
+              dataKey="value"
+              nameKey="name"
+              innerRadius={42}
+              outerRadius={72}
+              paddingAngle={2}
+              stroke="none"
+              cursor={onFilterClick ? "pointer" : undefined}
+              onClick={onFilterClick ? (d: any) => onFilterClick({ status: d?.name }) : undefined}
+            >
               {statusMix.map((_, i) => (
                 <Cell key={i} fill={[PINK, ORANGE][i]} />
               ))}
@@ -270,10 +298,28 @@ export default function Charts({
       {/* Last row — 2 donuts in a wider 2-up grid so the layout reads as
           intentional rather than a half-empty 3-up row. */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-      <ChartCard title="ACH status" subtitle="In Progress vs none">
+      <ChartCard title="ACH status" subtitle={onFilterClick ? "click a slice to filter" : "In Progress vs none"}>
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
-            <Pie data={achSplit} dataKey="value" nameKey="name" innerRadius={42} outerRadius={72} paddingAngle={2} stroke="none">
+            <Pie
+              data={achSplit}
+              dataKey="value"
+              nameKey="name"
+              innerRadius={42}
+              outerRadius={72}
+              paddingAngle={2}
+              stroke="none"
+              cursor={onFilterClick ? "pointer" : undefined}
+              onClick={
+                onFilterClick
+                  ? (d: any) => {
+                      const name = d?.name;
+                      if (name === "ACH In Progress") onFilterClick({ ach: "in_progress" });
+                      else if (name === "No ACH") onFilterClick({ ach: "none" });
+                    }
+                  : undefined
+              }
+            >
               {achSplit.map((_, i) => (
                 <Cell key={i} fill={[CYAN, TRACK][i]} />
               ))}
@@ -285,10 +331,28 @@ export default function Charts({
         </ResponsiveContainer>
       </ChartCard>
 
-      <ChartCard title="Auto-debit split" subtitle="On / Off / Unknown">
+      <ChartCard title="Auto-debit split" subtitle={onFilterClick ? "click a slice to filter" : "On / Off / Unknown"}>
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
-            <Pie data={autoMix} dataKey="value" nameKey="name" innerRadius={42} outerRadius={72} paddingAngle={2} stroke="none">
+            <Pie
+              data={autoMix}
+              dataKey="value"
+              nameKey="name"
+              innerRadius={42}
+              outerRadius={72}
+              paddingAngle={2}
+              stroke="none"
+              cursor={onFilterClick ? "pointer" : undefined}
+              onClick={
+                onFilterClick
+                  ? (d: any) => {
+                      const name = d?.name;
+                      if (name === "Auto debit On") onFilterClick({ autoDebit: "On" });
+                      else if (name === "Auto debit Off") onFilterClick({ autoDebit: "Off" });
+                    }
+                  : undefined
+              }
+            >
               {autoMix.map((_, i) => (
                 <Cell key={i} fill={[GREEN, RED, LAVENDER][i % 3]} />
               ))}
