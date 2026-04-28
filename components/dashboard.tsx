@@ -1,33 +1,76 @@
 "use client";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { InvoiceRow, AnnotationsMap } from "@/lib/types";
 import KpiCards from "./kpi-cards";
 import Charts from "./charts";
 import Filters, { type FilterState } from "./filters";
 import InvoicesTable from "./invoices-table";
 import ExportButton from "./export-button";
+import UserMenu from "./user-menu";
 import { RefreshCw } from "lucide-react";
 
 type Tab = "All" | "April" | "March" | "February";
 const TABS: Tab[] = ["All", "April", "March", "February"];
 
+const DEFAULT_FILTERS: FilterState = {
+  q: "",
+  am: "",
+  status: "",
+  month: "",
+  ach: "",
+  autoDebit: "",
+  multiOnly: false
+};
+
+function parseTab(v: string | null): Tab {
+  return v === "April" || v === "March" || v === "February" ? v : "All";
+}
+
+function parseFilters(sp: URLSearchParams): FilterState {
+  return {
+    q: sp.get("q") || "",
+    am: sp.get("am") || "",
+    status: sp.get("status") || "",
+    month: sp.get("month") || "",
+    ach: sp.get("ach") || "",
+    autoDebit: sp.get("autoDebit") || "",
+    multiOnly: sp.get("multiOnly") === "1"
+  };
+}
+
+function buildSearchString(tab: Tab, filters: FilterState): string {
+  const sp = new URLSearchParams();
+  if (tab !== "All") sp.set("tab", tab);
+  if (filters.q) sp.set("q", filters.q);
+  if (filters.am) sp.set("am", filters.am);
+  if (filters.status) sp.set("status", filters.status);
+  if (filters.month) sp.set("month", filters.month);
+  if (filters.ach) sp.set("ach", filters.ach);
+  if (filters.autoDebit) sp.set("autoDebit", filters.autoDebit);
+  if (filters.multiOnly) sp.set("multiOnly", "1");
+  const s = sp.toString();
+  return s ? `?${s}` : "";
+}
+
 export default function Dashboard() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
   const [rows, setRows] = useState<InvoiceRow[]>([]);
   const [annotations, setAnnotations] = useState<AnnotationsMap>({});
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [fetchedAt, setFetchedAt] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<Tab>("All");
-  const [filters, setFilters] = useState<FilterState>({
-    q: "",
-    am: "",
-    status: "",
-    month: "",
-    ach: "",
-    autoDebit: "",
-    multiOnly: false
-  });
+
+  // Initial state hydrated from the URL so shared/bookmarked links open with
+  // the same view. After mount, state changes flow back into the URL.
+  const [activeTab, setActiveTab] = useState<Tab>(() =>
+    parseTab(searchParams.get("tab"))
+  );
+  const [filters, setFilters] = useState<FilterState>(() => parseFilters(searchParams));
 
   async function loadInvoices(refresh = false) {
     if (refresh) setRefreshing(true); else setLoading(true);
@@ -58,6 +101,25 @@ export default function Dashboard() {
     loadInvoices();
     loadAnnotations();
   }, []);
+
+  // Sync state → URL (replace, don't push, so we don't pollute history).
+  const lastSearchRef = useRef<string>("");
+  useEffect(() => {
+    const next = buildSearchString(activeTab, filters);
+    if (next === lastSearchRef.current) return;
+    lastSearchRef.current = next;
+    router.replace(`${pathname}${next}`, { scroll: false });
+  }, [activeTab, filters, pathname, router]);
+
+  // Sync URL → state on browser back/forward (popstate). The router doesn't
+  // re-fire useState initializers, so we reconcile manually.
+  useEffect(() => {
+    const fromUrl = searchParams.toString();
+    if (fromUrl === lastSearchRef.current.replace(/^\?/, "")) return;
+    setActiveTab(parseTab(searchParams.get("tab")));
+    setFilters(parseFilters(searchParams));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   const multiMonthSet = useMemo(() => {
     const m = new Map<string, Set<string>>();
@@ -143,6 +205,7 @@ export default function Dashboard() {
             Refresh
           </button>
           <ExportButton rows={filtered} annotations={annotations} multiMonthSet={multiMonthSet} />
+          <UserMenu />
         </div>
       </header>
 
