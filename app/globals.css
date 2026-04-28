@@ -1,101 +1,195 @@
-@import url("https://fonts.googleapis.com/css2?family=Gothic+A1:wght@500;600;700;900&family=Inter:wght@300;400;500;600;700&display=swap");
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-html, body { background: #f6f6f6; color: #0b051d; }
-body { font-family: Inter, ui-sans-serif, system-ui, -apple-system, sans-serif; }
-h1, h2, h3, .display { font-family: "Gothic A1", Inter, Arial, sans-serif; letter-spacing: -0.01em; }
+/* ============================================================
+   Zoca dark theme — modern, data-dense
+   Geometric sans (Inter) + JetBrains Mono for IDs/numbers.
+   ============================================================ */
 
-/* Table — Zoca-themed */
-table.zoca-tbl thead th {
-  background: #1f0843;
-  color: #ffffff;
+html, body {
+  background: #0a0613;
+  color: #f5f0ff;
+  font-feature-settings: "ss01", "cv11";
+  letter-spacing: -0.005em;
+}
+
+body {
+  background-image:
+    radial-gradient(60% 30% at 0% 0%, rgba(120, 104, 244, 0.10) 0%, transparent 70%),
+    radial-gradient(50% 30% at 100% 0%, rgba(255, 168, 205, 0.06) 0%, transparent 70%);
+  background-attachment: fixed;
+  min-height: 100vh;
+}
+
+h1, h2, h3, .display {
+  letter-spacing: -0.022em;
   font-weight: 600;
-  font-size: 12px;
-  padding: 10px 12px;
-  text-align: left;
-  white-space: nowrap;
-  border-bottom: 1px solid rgba(255,255,255,0.05);
-  /* Sticky on vertical scroll inside the table wrapper. */
-  position: sticky;
-  top: 0;
-  z-index: 2;
-}
-table.zoca-tbl thead th:first-child { border-top-left-radius: 8px; }
-table.zoca-tbl thead th:last-child  { border-top-right-radius: 8px; }
-table.zoca-tbl tbody td {
-  font-size: 12px;
-  padding: 8px 12px;
-  border-top: 1px solid #f0eef3;
-  vertical-align: middle;
-  color: #0b051d;
-}
-table.zoca-tbl tbody tr:hover { background: #fff5fa; }
-table.zoca-tbl tbody tr.multi-month { background: rgba(255,168,205,0.08); }
-
-/* Pills */
-.pill {
-  display: inline-block;
-  padding: 2px 10px;
-  border-radius: 999px;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.01em;
+  color: #f5f0ff;
 }
 
-/* Buttons in Zoca style */
+/* ---------- Cards ---------- */
+.card-zoca {
+  background: #110d24;
+  border: 1px solid #1f1a3d;
+  border-radius: 10px;
+  padding: 12px 14px;
+}
+
+/* ---------- Buttons ---------- */
 .btn-zoca {
   display: inline-flex;
   align-items: center;
   gap: 6px;
   background: #ffa8cd;
-  color: #0b051d;
-  padding: 8px 14px;
-  border-radius: 0.5rem;
+  color: #1a0e2e;
+  padding: 6px 12px;
+  border-radius: 6px;
   font-weight: 600;
-  font-size: 13px;
-  transition: all .2s ease;
+  font-size: 12px;
+  transition: background .15s ease;
 }
-.btn-zoca:hover { background: #f695be; transform: translateY(-1px); }
-.btn-zoca:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+.btn-zoca:hover { background: #f695be; }
+.btn-zoca:disabled { opacity: 0.55; cursor: not-allowed; }
 
 .btn-ghost {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: #ffffff;
-  color: #1f0843;
-  padding: 8px 14px;
-  border: 1px solid #e7e7e7;
-  border-radius: 0.5rem;
+  background: transparent;
+  color: #cfc4ee;
+  padding: 6px 12px;
+  border: 1px solid #2a2451;
+  border-radius: 6px;
   font-weight: 500;
-  font-size: 13px;
-  transition: all .2s ease;
+  font-size: 12px;
+  transition: background .15s ease, border-color .15s ease, color .15s ease;
 }
-.btn-ghost:hover { border-color: #1f0843; }
+.btn-ghost:hover { background: #1a1438; border-color: #3a3070; color: #f5f0ff; }
 
-/* Tab pill nav */
+/* ---------- Tabs ---------- */
 .tab-pill {
-  padding: 8px 18px;
+  padding: 5px 12px;
   border-radius: 999px;
   font-weight: 500;
-  font-size: 13px;
-  color: #5d5d5d;
+  font-size: 12px;
+  color: #a89cc6;
   background: transparent;
-  transition: all .2s ease;
-  border: 1px solid transparent;
+  transition: color .15s ease, background .15s ease;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
 }
-.tab-pill:hover { color: #1f0843; }
+.tab-pill:hover { color: #f5f0ff; }
 .tab-pill[aria-selected="true"] {
-  background: #1f0843;
-  color: #ffffff;
+  background: #ffa8cd;
+  color: #1a0e2e;
+  font-weight: 600;
 }
 
-/* Card */
-.card-zoca {
-  background: #ffffff;
-  border: 1px solid #e7e7e7;
-  border-radius: 12px;
-  padding: 14px 16px;
+/* ---------- Pills ---------- */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0;
+  line-height: 1.5;
 }
+
+/* ---------- Table ---------- */
+table.zoca-tbl {
+  font-family: var(--font-inter), Inter, sans-serif;
+}
+table.zoca-tbl thead th {
+  background: #18133a;
+  color: #cfc4ee;
+  font-weight: 500;
+  font-size: 10px;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  padding: 9px 10px;
+  text-align: left;
+  white-space: nowrap;
+  border-bottom: 1px solid #2a2451;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+table.zoca-tbl tbody td {
+  font-size: 12px;
+  padding: 7px 10px;
+  border-top: 1px solid #1f1a3d;
+  vertical-align: middle;
+  color: #f5f0ff;
+}
+table.zoca-tbl tbody tr:hover { background: #1a1438; }
+table.zoca-tbl tbody tr.multi-month { background: rgba(255, 168, 205, 0.04); }
+table.zoca-tbl tbody tr.multi-month:hover { background: rgba(255, 168, 205, 0.07); }
+
+/* ---------- Inputs ---------- */
+.input-zoca {
+  height: 30px;
+  padding: 0 10px;
+  font-size: 12px;
+  color: #cfc4ee;
+  background: #0d0820;
+  border: 1px solid #2a2451;
+  border-radius: 6px;
+  transition: border-color .15s ease, background .15s ease;
+}
+.input-zoca::placeholder { color: #6b5b8e; }
+.input-zoca:hover { border-color: #3a3070; }
+.input-zoca:focus {
+  outline: none;
+  border-color: #7868f4;
+  background: #110d24;
+}
+
+select.input-zoca {
+  appearance: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b5b8e' stroke-width='2'><polyline points='6 9 12 15 18 9'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  padding-right: 26px;
+}
+select.input-zoca option {
+  background: #0d0820;
+  color: #f5f0ff;
+}
+
+/* ---------- Recharts overrides (dark) ---------- */
+.recharts-tooltip-wrapper {
+  outline: none !important;
+}
+.recharts-default-tooltip {
+  background: #110d24 !important;
+  border: 1px solid #2a2451 !important;
+  border-radius: 8px !important;
+  font-size: 11px !important;
+  padding: 6px 10px !important;
+}
+.recharts-tooltip-label,
+.recharts-tooltip-item {
+  color: #f5f0ff !important;
+}
+.recharts-cartesian-axis-tick-value {
+  fill: #a89cc6 !important;
+  font-size: 11px !important;
+}
+.recharts-legend-item-text {
+  color: #a89cc6 !important;
+  font-size: 11px !important;
+}
+
+/* ---------- Scrollbars ---------- */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #2a2451; border-radius: 999px; border: 2px solid #0a0613; }
+::-webkit-scrollbar-thumb:hover { background: #3a3070; }
+
+/* ---------- Tabular numerals on .num ---------- */
+.tabnum { font-variant-numeric: tabular-nums; }

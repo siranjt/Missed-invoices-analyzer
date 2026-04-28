@@ -1,24 +1,56 @@
 "use client";
 import {
-  ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, PieChart, Pie, Cell, Legend, LabelList
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  PieChart,
+  Pie,
+  Cell,
+  Legend,
+  LabelList
 } from "recharts";
 import type { InvoiceRow } from "@/lib/types";
 
-const ZOCA_COLORS = ["#ffa8cd", "#1f0843", "#7868f4", "#0b051d", "#5d5d5d", "#9b9b9b", "#f695be", "#3b1e7a"];
+const PINK = "#ffa8cd";
+const PURPLE = "#7868f4";
+const LAVENDER = "#c4b5e8";
+const TRACK = "#221a45";
+const AXIS = "#a89cc6";
+
+const TOOLTIP_STYLE = {
+  background: "#110d24",
+  border: "1px solid #2a2451",
+  borderRadius: 8,
+  color: "#f5f0ff",
+  fontSize: 11
+};
+const TOOLTIP_LABEL = { color: "#cfc4ee", fontWeight: 500 };
+const TOOLTIP_ITEM = { color: "#f5f0ff" };
 
 function fmtUsd(v: number | string) {
   const n = typeof v === "string" ? Number(v) : v;
   return "$" + Math.round(n).toLocaleString();
 }
 
-function ChartCard({ title, subtitle, height = 240, children }: any) {
+function ChartCard({
+  title,
+  subtitle,
+  height = 200,
+  children
+}: {
+  title: string;
+  subtitle?: string;
+  height?: number;
+  children: React.ReactNode;
+}) {
   return (
     <div className="card-zoca">
       <div className="flex items-baseline justify-between mb-2">
-        <div>
-          <div className="text-sm font-semibold text-zoca-purpleDark">{title}</div>
-          {subtitle && <div className="text-[11px] text-zoca-neutral40">{subtitle}</div>}
-        </div>
+        <div className="text-[12px] font-medium text-zoca-text">{title}</div>
+        {subtitle && <div className="text-[10px] text-zoca-textDim">{subtitle}</div>}
       </div>
       <div style={{ height }}>{children}</div>
     </div>
@@ -32,7 +64,7 @@ export default function Charts({
   rows: InvoiceRow[];
   onAmClick?: (amName: string) => void;
 }) {
-  // 1. Outstanding by AM (top 10, horizontal bar)
+  // 1. Outstanding by AM (top 10)
   const byAmMap = new Map<string, number>();
   rows.forEach((r) => {
     const k = r.amName || "(unassigned)";
@@ -43,17 +75,18 @@ export default function Charts({
     .sort((a, b) => b.value - a.value)
     .slice(0, 10);
 
-  // 2. Outstanding by month
+  // 2. By month
   const byMonthMap = new Map<string, number>();
   rows.forEach((r) => {
     const k = r.invoiceMonth || "(unknown)";
     byMonthMap.set(k, (byMonthMap.get(k) || 0) + r.amountDue);
   });
   const byMonth = Array.from(byMonthMap.entries()).map(([name, value]) => ({
-    name, value: Math.round(value)
+    name,
+    value: Math.round(value)
   }));
 
-  // 3. Status mix (donut)
+  // 3. Status mix
   const statusMix = [
     { name: "payment_due", value: rows.filter((r) => r.status === "payment_due").length },
     { name: "not_paid", value: rows.filter((r) => r.status === "not_paid").length }
@@ -67,36 +100,60 @@ export default function Charts({
 
   // 5. Auto-debit split
   const autoMix = [
-    { name: "Auto debit On",  value: rows.filter((r) => r.autoDebit === "On").length },
+    { name: "Auto debit On", value: rows.filter((r) => r.autoDebit === "On").length },
     { name: "Auto debit Off", value: rows.filter((r) => r.autoDebit === "Off").length },
-    { name: "Unknown",        value: rows.filter((r) => !r.autoDebit).length }
+    { name: "Unknown", value: rows.filter((r) => !r.autoDebit).length }
   ].filter((d) => d.value > 0);
 
-  // 6. Top 10 customers by amount due
+  // 6. Top customers
   const byBizMap = new Map<string, number>();
   rows.forEach((r) => {
     const k = r.bizName || r.customerCompany || r.customerId || "(unknown)";
     byBizMap.set(k, (byBizMap.get(k) || 0) + r.amountDue);
   });
   const topCustomers = Array.from(byBizMap.entries())
-    .map(([name, value]) => ({ name: name.length > 22 ? name.slice(0, 22) + "…" : name, value: Math.round(value) }))
+    .map(([name, value]) => ({
+      name: name.length > 22 ? name.slice(0, 22) + "…" : name,
+      value: Math.round(value)
+    }))
     .sort((a, b) => b.value - a.value)
     .slice(0, 10);
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
       <ChartCard
         title="Outstanding by AM"
-        subtitle={onAmClick ? "Top 10 · click a bar to drill down" : "Top 10"}
+        subtitle={onAmClick ? "Top 10 · click a bar to drill" : "Top 10"}
       >
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={byAm} layout="vertical" margin={{ left: 8, right: 16 }}>
-            <XAxis type="number" tickFormatter={(v) => "$" + (v / 1000).toFixed(0) + "k"} fontSize={11} stroke="#5d5d5d" />
-            <YAxis type="category" dataKey="name" width={90} fontSize={11} stroke="#5d5d5d" />
-            <Tooltip formatter={(v: any) => fmtUsd(v)} contentStyle={{ borderRadius: 8, border: "1px solid #e7e7e7" }} />
+          <BarChart data={byAm} layout="vertical" margin={{ left: 0, right: 12, top: 4, bottom: 4 }}>
+            <XAxis
+              type="number"
+              tickFormatter={(v) => "$" + (v / 1000).toFixed(0) + "k"}
+              fontSize={10}
+              stroke={AXIS}
+              axisLine={false}
+              tickLine={false}
+            />
+            <YAxis
+              type="category"
+              dataKey="name"
+              width={70}
+              fontSize={10}
+              stroke={AXIS}
+              axisLine={false}
+              tickLine={false}
+            />
+            <Tooltip
+              formatter={(v: any) => fmtUsd(v)}
+              contentStyle={TOOLTIP_STYLE}
+              labelStyle={TOOLTIP_LABEL}
+              itemStyle={TOOLTIP_ITEM}
+              cursor={{ fill: "rgba(120,104,244,0.06)" }}
+            />
             <Bar
               dataKey="value"
-              fill="#ffa8cd"
+              fill={PINK}
               radius={[0, 4, 4, 0]}
               cursor={onAmClick ? "pointer" : undefined}
               onClick={
@@ -112,24 +169,57 @@ export default function Charts({
         </ResponsiveContainer>
       </ChartCard>
 
-      <ChartCard title="Outstanding by month" subtitle="Across visible invoices">
+      <ChartCard title="Outstanding by month" subtitle="Visible rows">
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={byMonth}>
-            <XAxis dataKey="name" fontSize={11} stroke="#5d5d5d" />
-            <YAxis tickFormatter={(v) => "$" + (v / 1000).toFixed(0) + "k"} fontSize={11} stroke="#5d5d5d" />
-            <Tooltip formatter={(v: any) => fmtUsd(v)} contentStyle={{ borderRadius: 8, border: "1px solid #e7e7e7" }} />
-            <Bar dataKey="value" fill="#7868f4" radius={[6, 6, 0, 0]} />
+          <BarChart data={byMonth} margin={{ left: 0, right: 8, top: 4, bottom: 4 }}>
+            <XAxis dataKey="name" fontSize={10} stroke={AXIS} axisLine={false} tickLine={false} />
+            <YAxis
+              tickFormatter={(v) => "$" + (v / 1000).toFixed(0) + "k"}
+              fontSize={10}
+              stroke={AXIS}
+              axisLine={false}
+              tickLine={false}
+            />
+            <Tooltip
+              formatter={(v: any) => fmtUsd(v)}
+              contentStyle={TOOLTIP_STYLE}
+              labelStyle={TOOLTIP_LABEL}
+              itemStyle={TOOLTIP_ITEM}
+              cursor={{ fill: "rgba(120,104,244,0.06)" }}
+            />
+            <Bar dataKey="value" fill={PURPLE} radius={[4, 4, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </ChartCard>
 
-      <ChartCard title="Top 10 customers" subtitle="By outstanding amount">
+      <ChartCard title="Top customers" subtitle="By amount due">
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={topCustomers} layout="vertical" margin={{ left: 8, right: 16 }}>
-            <XAxis type="number" tickFormatter={(v) => "$" + (v / 1000).toFixed(0) + "k"} fontSize={11} stroke="#5d5d5d" />
-            <YAxis type="category" dataKey="name" width={130} fontSize={10} stroke="#5d5d5d" />
-            <Tooltip formatter={(v: any) => fmtUsd(v)} contentStyle={{ borderRadius: 8, border: "1px solid #e7e7e7" }} />
-            <Bar dataKey="value" fill="#1f0843" radius={[0, 4, 4, 0]} />
+          <BarChart data={topCustomers} layout="vertical" margin={{ left: 0, right: 12, top: 4, bottom: 4 }}>
+            <XAxis
+              type="number"
+              tickFormatter={(v) => "$" + (v / 1000).toFixed(0) + "k"}
+              fontSize={10}
+              stroke={AXIS}
+              axisLine={false}
+              tickLine={false}
+            />
+            <YAxis
+              type="category"
+              dataKey="name"
+              width={120}
+              fontSize={9}
+              stroke={AXIS}
+              axisLine={false}
+              tickLine={false}
+            />
+            <Tooltip
+              formatter={(v: any) => fmtUsd(v)}
+              contentStyle={TOOLTIP_STYLE}
+              labelStyle={TOOLTIP_LABEL}
+              itemStyle={TOOLTIP_ITEM}
+              cursor={{ fill: "rgba(120,104,244,0.06)" }}
+            />
+            <Bar dataKey="value" fill={LAVENDER} radius={[0, 4, 4, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </ChartCard>
@@ -137,14 +227,27 @@ export default function Charts({
       <ChartCard title="Status mix" subtitle="payment_due vs not_paid">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
-            <Pie data={statusMix} dataKey="value" nameKey="name" innerRadius={42} outerRadius={78} paddingAngle={2}>
+            <Pie data={statusMix} dataKey="value" nameKey="name" innerRadius={42} outerRadius={72} paddingAngle={2} stroke="none">
               {statusMix.map((_, i) => (
-                <Cell key={i} fill={[ "#ffa8cd", "#1f0843" ][i]} />
+                <Cell key={i} fill={[PINK, PURPLE][i]} />
               ))}
-              <LabelList dataKey="value" position="outside" />
+              <LabelList
+                dataKey="value"
+                position="outside"
+                fill="#cfc4ee"
+                fontSize={11}
+              />
             </Pie>
-            <Legend verticalAlign="bottom" iconSize={10} formatter={(v: any) => <span className="text-[11px] text-zoca-neutral40">{v}</span>} />
-            <Tooltip />
+            <Legend
+              verticalAlign="bottom"
+              iconSize={8}
+              wrapperStyle={{ fontSize: 10 }}
+            />
+            <Tooltip
+              contentStyle={TOOLTIP_STYLE}
+              labelStyle={TOOLTIP_LABEL}
+              itemStyle={TOOLTIP_ITEM}
+            />
           </PieChart>
         </ResponsiveContainer>
       </ChartCard>
@@ -152,14 +255,19 @@ export default function Charts({
       <ChartCard title="ACH status" subtitle="In Progress vs none">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
-            <Pie data={achSplit} dataKey="value" nameKey="name" innerRadius={42} outerRadius={78} paddingAngle={2}>
+            <Pie data={achSplit} dataKey="value" nameKey="name" innerRadius={42} outerRadius={72} paddingAngle={2} stroke="none">
               {achSplit.map((_, i) => (
-                <Cell key={i} fill={[ "#7868f4", "#e7e7e7" ][i]} />
+                <Cell key={i} fill={[PURPLE, TRACK][i]} />
               ))}
-              <LabelList dataKey="value" position="outside" />
+              <LabelList
+                dataKey="value"
+                position="outside"
+                fill="#cfc4ee"
+                fontSize={11}
+              />
             </Pie>
-            <Legend verticalAlign="bottom" iconSize={10} formatter={(v: any) => <span className="text-[11px] text-zoca-neutral40">{v}</span>} />
-            <Tooltip />
+            <Legend verticalAlign="bottom" iconSize={8} wrapperStyle={{ fontSize: 10 }} />
+            <Tooltip contentStyle={TOOLTIP_STYLE} labelStyle={TOOLTIP_LABEL} itemStyle={TOOLTIP_ITEM} />
           </PieChart>
         </ResponsiveContainer>
       </ChartCard>
@@ -167,14 +275,19 @@ export default function Charts({
       <ChartCard title="Auto-debit split" subtitle="On / Off / Unknown">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
-            <Pie data={autoMix} dataKey="value" nameKey="name" innerRadius={42} outerRadius={78} paddingAngle={2}>
+            <Pie data={autoMix} dataKey="value" nameKey="name" innerRadius={42} outerRadius={72} paddingAngle={2} stroke="none">
               {autoMix.map((_, i) => (
-                <Cell key={i} fill={ZOCA_COLORS[i % ZOCA_COLORS.length]} />
+                <Cell key={i} fill={[PINK, PURPLE, LAVENDER][i % 3]} />
               ))}
-              <LabelList dataKey="value" position="outside" />
+              <LabelList
+                dataKey="value"
+                position="outside"
+                fill="#cfc4ee"
+                fontSize={11}
+              />
             </Pie>
-            <Legend verticalAlign="bottom" iconSize={10} formatter={(v: any) => <span className="text-[11px] text-zoca-neutral40">{v}</span>} />
-            <Tooltip />
+            <Legend verticalAlign="bottom" iconSize={8} wrapperStyle={{ fontSize: 10 }} />
+            <Tooltip contentStyle={TOOLTIP_STYLE} labelStyle={TOOLTIP_LABEL} itemStyle={TOOLTIP_ITEM} />
           </PieChart>
         </ResponsiveContainer>
       </ChartCard>

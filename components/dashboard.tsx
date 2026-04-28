@@ -237,22 +237,27 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <header className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="display text-2xl font-bold text-zoca-purpleDark">Missed Invoice Tracker</h1>
-          <p className="text-xs text-zoca-neutral40 mt-1">
+          <div className="text-[10px] tracking-[0.18em] text-zoca-purple uppercase font-medium">
+            Zoca · Finance
+          </div>
+          <h1 className="display text-[22px] font-semibold text-zoca-text mt-0.5">
+            Missed invoice tracker
+          </h1>
+          <p className="text-[11px] text-zoca-textDim mt-1">
             Live Chargebee + Metabase
-            {fetchedAt ? ` · last fetch ${new Date(fetchedAt).toLocaleString()}` : ""}
+            {fetchedAt ? `  ·  last fetch ${new Date(fetchedAt).toLocaleString()}` : ""}
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 items-center">
           <button
             onClick={() => loadInvoices(true)}
             disabled={refreshing}
             className="btn-ghost"
           >
-            <RefreshCw size={14} className={refreshing ? "animate-spin" : ""} />
+            <RefreshCw size={13} className={refreshing ? "animate-spin" : ""} />
             Refresh
           </button>
           <ExportButton rows={filtered} annotations={annotations} multiMonthSet={multiMonthSet} />
@@ -261,13 +266,23 @@ export default function Dashboard() {
       </header>
 
       {error && (
-        <div className="card-zoca text-sm" style={{ background: "#fff0f3", borderColor: "#ffd6e1", color: "#9b1d3b" }}>
+        <div
+          className="card-zoca text-[12px]"
+          style={{
+            background: "rgba(248,113,113,0.08)",
+            borderColor: "rgba(248,113,113,0.30)",
+            color: "#fca5a5"
+          }}
+        >
           {error}
         </div>
       )}
 
       {/* Tabs */}
-      <div role="tablist" className="flex gap-1 flex-wrap card-zoca !p-1.5 inline-flex w-fit">
+      <div
+        role="tablist"
+        className="inline-flex gap-1 flex-wrap p-1 rounded-full bg-zoca-surface border border-zoca-border w-fit"
+      >
         {TABS.map((t) => (
           <button
             key={t}
@@ -276,7 +291,8 @@ export default function Dashboard() {
             onClick={() => setActiveTab(t)}
             className="tab-pill"
           >
-            {t} <span className="opacity-70 ml-1 text-[11px]">({tabCounts[t]})</span>
+            {t}
+            <span className="opacity-70 text-[11px] tabnum">{tabCounts[t]}</span>
           </button>
         ))}
       </div>
@@ -294,20 +310,20 @@ export default function Dashboard() {
           <Charts rows={filtered} onAmClick={handleAmClick} />
           <Filters value={filters} onChange={setFilters} rows={rows} />
           {filters.am && (
-            <div className="flex items-center gap-2 text-xs">
-              <span className="text-zoca-neutral40">Drilled into AM:</span>
+            <div className="flex items-center gap-2 text-[11px]">
+              <span className="text-zoca-textMuted">Drilled into AM:</span>
               <span
                 className="pill"
-                style={{ background: "#ece6ff", color: "#3b1e7a" }}
+                style={{ background: "rgba(120,104,244,0.16)", color: "#c4b5e8" }}
               >
                 {filters.am}
               </span>
               <button
                 type="button"
                 onClick={() => setFilters((f) => ({ ...f, am: "" }))}
-                className="inline-flex items-center gap-1 text-zoca-neutral40 hover:text-zoca-purpleDark transition-colors"
+                className="inline-flex items-center gap-1 text-zoca-textMuted hover:text-zoca-text transition-colors"
               >
-                <X size={12} />
+                <X size={11} />
                 Clear
               </button>
             </div>

@@ -17,23 +17,27 @@ function SignInInner() {
 
   return (
     <main className="min-h-screen flex items-center justify-center p-6">
-      <div className="card-zoca w-full max-w-sm text-center space-y-5">
+      <div className="card-zoca w-full max-w-sm text-center space-y-5 !p-6">
         <div className="space-y-1">
-          <p className="text-[11px] uppercase tracking-[0.2em] text-zoca-neutral40">
+          <p className="text-[10px] uppercase tracking-[0.18em] text-zoca-purple font-medium">
             Zoca · Finance
           </p>
-          <h1 className="display text-2xl font-bold text-zoca-purpleDark">
-            Missed Invoice Tracker
+          <h1 className="display text-[22px] font-semibold text-zoca-text">
+            Missed invoice tracker
           </h1>
-          <p className="text-xs text-zoca-neutral40">
+          <p className="text-[11px] text-zoca-textDim">
             Sign in with your @zoca.com Google account.
           </p>
         </div>
 
         {errorMsg && (
           <div
-            className="text-xs px-3 py-2 rounded-lg"
-            style={{ background: "#fff0f3", color: "#9b1d3b", border: "1px solid #ffd6e1" }}
+            className="text-[12px] px-3 py-2 rounded-md"
+            style={{
+              background: "rgba(248,113,113,0.08)",
+              border: "1px solid rgba(248,113,113,0.30)",
+              color: "#fca5a5"
+            }}
           >
             {errorMsg}
           </div>
@@ -41,12 +45,12 @@ function SignInInner() {
 
         <button
           onClick={() => signIn("google", { callbackUrl })}
-          className="btn-zoca w-full justify-center"
+          className="btn-zoca w-full justify-center !py-2"
         >
           Continue with Google
         </button>
 
-        <p className="text-[11px] text-zoca-neutral40">
+        <p className="text-[10px] text-zoca-textDim">
           Restricted to Zoca employees. Other accounts will be denied.
         </p>
       </div>

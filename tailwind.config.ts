@@ -5,32 +5,46 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        // Zoca dark — modern, data-dense
         zoca: {
+          // Canvas + surfaces
+          canvas: "#0a0613",        // page background
+          surface: "#110d24",        // card / table fill
+          surfaceHover: "#1a1438",   // row hover
+          thead: "#18133a",          // table header
+          searchBg: "#0d0820",       // input background
+          trackBg: "#221a45",        // chart bar tracks
+
+          // Borders
+          border: "#1f1a3d",         // default
+          borderStrong: "#2a2451",   // hover / inputs
+
+          // Text
+          text: "#f5f0ff",           // primary
+          textSecondary: "#cfc4ee",
+          textMuted: "#a89cc6",
+          textDim: "#6b5b8e",
+
+          // Brand accents (kept from old theme)
           pink: "#ffa8cd",
           pinkHover: "#f695be",
-          pinkSoft: "#ffe0ee",
-          purple: "#1f0843",
-          purpleDark: "#0b051d",
-          purpleSoft: "#f3edfd",
-          purpleAccent: "#7868f4",
-          neutral0: "#030209",
-          neutral40: "#5d5d5d",
-          neutral80: "#9b9b9b",
-          stroke: "#e7e7e7",
-          bg: "#f6f6f6",
-          bgWhite: "#ffffff"
+          pinkInk: "#1a0e2e",        // text on pink
+          purple: "#7868f4",
+          purpleDeep: "#1f0843",
+          lavender: "#c4b5e8",
+
+          // Semantic
+          green: "#4ade80",
+          red: "#f87171",
+          amber: "#fb923c"
         }
       },
       fontFamily: {
-        sans: ["Inter", "ui-sans-serif", "system-ui", "sans-serif"],
-        display: ["Gothic A1", "Inter", "Arial", "sans-serif"]
+        sans: ["var(--font-inter)", "Inter", "ui-sans-serif", "system-ui", "sans-serif"],
+        mono: ["var(--font-mono)", "JetBrains Mono", "ui-monospace", "monospace"]
       },
       borderRadius: {
         zoca: "0.5rem"
-      },
-      boxShadow: {
-        zocaCard: "0 1px 3px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.04)",
-        zocaPop: "0 4px 16px rgba(31,8,67,0.08), 0 0 0 1px rgba(0,0,0,0.04)"
       }
     }
   },
