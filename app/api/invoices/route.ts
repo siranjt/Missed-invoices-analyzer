@@ -7,10 +7,10 @@ import {
 } from "@/lib/chargebee";
 import { fetchBaseSheet, indexBaseSheet } from "@/lib/metabase";
 import {
-  fetchOpenFinanceTickets,
+  fetchActiveTickets,
   indexTicketsByEntity,
-  type OpenTicket
-} from "@/lib/linear";
+  type Ticket
+} from "@/lib/tickets";
 import { buildInvoiceRows } from "@/lib/enrich";
 import type { InvoicesResponse } from "@/lib/types";
 
@@ -80,21 +80,16 @@ export async function GET(req: NextRequest) {
           fetchOpenInvoices(),
           fetchInProgressTransactions(),
           fetchBaseSheet(),
-          fetchOpenFinanceTickets().catch((e) => {
-            console.warn("[invoices] Linear fetch failed:", e?.message || e);
-            return [] as OpenTicket[];
+          fetchActiveTickets().catch((e) => {
+            console.warn("[invoices] Metabase tickets fetch failed:", e?.message || e);
+            return [] as Ticket[];
           })
         ]);
         const baseSheet = indexBaseSheet(baseRows);
         const ticketsByEntity = indexTicketsByEntity(tickets);
 
-        // TEMP DIAGNOSTIC — remove once Tickets column is verified populating.
         console.log(
-          `[invoices] linear: fetched=${tickets.length} indexed_entities=${ticketsByEntity.size}` +
-            ` first_5=${tickets
-              .slice(0, 5)
-              .map((t) => `${t.id}{cust=${t.customerExternalIds.length}}`)
-              .join(",")}`
+          `[invoices] tickets: fetched=${tickets.length} indexed_entities=${ticketsByEntity.size}`
         );
 
         // Phase 1: emit partial rows enriched from BaseSheet + tickets so the

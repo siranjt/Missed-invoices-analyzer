@@ -1,6 +1,6 @@
 import "server-only";
 import type { InvoiceRow, InvoiceStatus, LatestTicket } from "./types";
-import type { OpenTicket } from "./linear";
+import type { Ticket } from "./tickets";
 
 const MONTH_NAMES = [
   "January","February","March","April","May","June",
@@ -24,8 +24,8 @@ export function buildInvoiceRows(args: {
   subs: Record<string, any>;
   achTransactions: any[];
   baseSheet: { byCustomerId: Map<string, any>; byEntityId: Map<string, any> };
-  /** Map<entity_id (lowercased), OpenTicket> — most-recent open ticket per entity. */
-  ticketsByEntity?: Map<string, OpenTicket>;
+  /** Map<entity_id (lowercased), Ticket> — most-recent active ticket per entity. */
+  ticketsByEntity?: Map<string, Ticket>;
 }): InvoiceRow[] {
   const { invoices, customers, subs, achTransactions, baseSheet, ticketsByEntity } = args;
 
@@ -66,7 +66,7 @@ export function buildInvoiceRows(args: {
       ? ticketsByEntity.get(entityId.toLowerCase())
       : undefined;
     const latestTicket: LatestTicket | undefined = ticket
-      ? { id: ticket.id, title: ticket.title, url: ticket.url }
+      ? { id: ticket.identifier, title: ticket.title, url: ticket.url }
       : undefined;
 
     return {
