@@ -19,8 +19,8 @@ import type { FilterState } from "./filters";
 const PINK = "#ffa8cd";
 const PURPLE = "#7868f4";
 const LAVENDER = "#c4b5e8";
-const TRACK = "#221a45"; // dark track for donuts
-const AXIS = "#a89cc6"; // muted purple-gray on dark
+const TRACK = "#3d3658"; // slate track for donuts
+const AXIS = "#b3a7ce"; // muted purple-gray on slate
 const CYAN = "#22d3ee";
 const ORANGE = "#fb923c";
 const GREEN = "#4ade80";
@@ -28,12 +28,12 @@ const AMBER = "#facc15";
 const RED = "#f87171";
 
 const TOOLTIP_STYLE = {
-  background: "#110d24",
-  border: "1px solid #2a2451",
+  background: "#2d2841",
+  border: "1px solid #3d3658",
   borderRadius: 10,
   color: "#f5f0ff",
   fontSize: 12,
-  boxShadow: "0 8px 24px rgba(0,0,0,0.40)"
+  boxShadow: "0 8px 24px rgba(0,0,0,0.35)"
 };
 const TOOLTIP_LABEL = { color: "#cfc4ee", fontWeight: 500 };
 const TOOLTIP_ITEM = { color: "#f5f0ff" };

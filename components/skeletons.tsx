@@ -13,7 +13,7 @@ export function Skeleton({
       className={`animate-pulse rounded-md ${className}`}
       style={{
         background:
-          "linear-gradient(90deg, #1a1438 0%, #221a45 50%, #1a1438 100%)",
+          "linear-gradient(90deg, #353050 0%, #3d3658 50%, #353050 100%)",
         ...style
       }}
     />

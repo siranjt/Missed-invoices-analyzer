@@ -5,25 +5,27 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Zoca dark — modern, vibrant, spacious. Montserrat across the board.
+        // Zoca twilight-slate — medium-dark slate-purple. Easier on the eyes
+        // than pure black for long sessions; brand colors still pop. Montserrat
+        // across the board.
         zoca: {
           // Canvas + surfaces
-          canvas: "#0a0613",         // page background
-          surface: "#110d24",         // card / table fill
-          surfaceHover: "#1a1438",    // row hover
-          thead: "#18133a",           // table header
-          searchBg: "#0d0820",        // input background
-          trackBg: "#221a45",         // chart bar/donut tracks
+          canvas: "#1f1a2e",         // page background — slate-purple
+          surface: "#2d2841",         // card / table fill
+          surfaceHover: "#353050",    // row hover
+          thead: "#262134",           // table header (slightly darker than card)
+          searchBg: "#1a162a",        // input background
+          trackBg: "#3d3658",         // chart bar/donut tracks
 
           // Borders
-          border: "#1f1a3d",
-          borderStrong: "#2a2451",
+          border: "#3d3658",
+          borderStrong: "#5a4f7a",
 
           // Text
-          text: "#f5f0ff",            // primary on dark
+          text: "#f5f0ff",            // primary
           textSecondary: "#cfc4ee",
-          textMuted: "#a89cc6",
-          textDim: "#6b5b8e",
+          textMuted: "#b3a7ce",
+          textDim: "#7d6f9d",
 
           // Brand accents (sourced from zoca.com)
           pink: "#ffa8cd",

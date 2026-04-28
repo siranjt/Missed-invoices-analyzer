@@ -156,9 +156,9 @@ export default function KpiSparklineGrid({
             clickable ? "card-zoca-interactive" : ""
           }`}
           style={{
-            background: `linear-gradient(180deg, ${c.color}1a 0%, #110d24 70%)`,
-            border: `1px solid ${c.color}33`,
-            boxShadow: `0 1px 2px rgba(0,0,0,0.20)`,
+            background: `linear-gradient(180deg, ${c.color}22 0%, #2d2841 70%)`,
+            border: `1px solid ${c.color}40`,
+            boxShadow: `0 1px 2px rgba(0,0,0,0.18)`,
             transition: "transform .18s ease, box-shadow .18s ease, border-color .18s ease"
           }}
         >
