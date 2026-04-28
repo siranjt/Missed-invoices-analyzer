@@ -106,6 +106,7 @@ export async function fetchOpenFinanceTickets(): Promise<OpenTicket[]> {
               nodes {
                 customer {
                   externalIds
+                  name
                 }
               }
             }
@@ -124,10 +125,30 @@ export async function fetchOpenFinanceTickets(): Promise<OpenTicket[]> {
       description: n.description || "",
       updatedAt: n.updatedAt,
       customerExternalIds: (n.customerNeeds?.nodes || []).flatMap(
-        (cn: any) => cn?.customer?.externalIds || []
+        (cn: any) => entityIdsFromCustomer(cn?.customer)
       )
     }))
     .filter(shouldIncludeTicket);
+}
+
+/**
+ * Pull every entity_id we can find on a Linear customer record:
+ *   - Whatever's in externalIds (rare in practice — many records leave this empty).
+ *   - The trailing UUID in the name field, since Zoca encodes customers as
+ *     "<bizname> | <uuid>" (consistent across the workspace; see customers list).
+ */
+const NAME_UUID_REGEX =
+  /\|\s*([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\s*$/i;
+
+function entityIdsFromCustomer(c: { externalIds?: string[]; name?: string } | null | undefined): string[] {
+  if (!c) return [];
+  const ids: string[] = [];
+  for (const id of c.externalIds || []) ids.push(id);
+  if (c.name) {
+    const m = c.name.match(NAME_UUID_REGEX);
+    if (m && m[1]) ids.push(m[1]);
+  }
+  return ids;
 }
 
 // Match every variant Zoca uses for "entity id" in Linear ticket bodies:
