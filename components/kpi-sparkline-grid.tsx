@@ -140,9 +140,9 @@ export default function KpiSparklineGrid({
           key={c.label}
           className="rounded-xl p-4 relative overflow-hidden"
           style={{
-            background: `linear-gradient(180deg, ${c.color}10 0%, #110d24 60%)`,
+            background: `linear-gradient(180deg, ${c.color}14 0%, #ffffff 70%)`,
             border: `1px solid ${c.color}33`,
-            boxShadow: `inset 0 1px 0 ${c.color}22`
+            boxShadow: `0 1px 2px rgba(31,8,67,0.04)`
           }}
         >
           {/* Colored top accent bar */}

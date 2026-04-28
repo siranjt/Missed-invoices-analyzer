@@ -5,38 +5,39 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Zoca dark — modern, data-dense
+        // Zoca light — clean, vibrant, same Bricolage/Inter/JetBrains Mono fonts.
         zoca: {
           // Canvas + surfaces
-          canvas: "#0a0613",        // page background
-          surface: "#110d24",        // card / table fill
-          surfaceHover: "#1a1438",   // row hover
-          thead: "#18133a",          // table header
-          searchBg: "#0d0820",       // input background
-          trackBg: "#221a45",        // chart bar tracks
+          canvas: "#faf9fc", // subtle lavender-tinted off-white
+          surface: "#ffffff", // pure white card
+          surfaceHover: "#f5f1fb",
+          thead: "#f5f1fb", // light lavender table header
+          searchBg: "#ffffff",
+          trackBg: "#ece6f7", // light track for chart bar backgrounds
 
           // Borders
-          border: "#1f1a3d",         // default
-          borderStrong: "#2a2451",   // hover / inputs
+          border: "#e9e3f5",
+          borderStrong: "#d8cef0",
 
-          // Text
-          text: "#f5f0ff",           // primary
-          textSecondary: "#cfc4ee",
-          textMuted: "#a89cc6",
-          textDim: "#6b5b8e",
+          // Text (dark on light)
+          text: "#1a0e2e", // primary
+          textSecondary: "#3d2f5e",
+          textMuted: "#6b5b8e",
+          textDim: "#9b8bc0",
 
-          // Brand accents (kept from old theme)
+          // Brand accents (kept saturated)
           pink: "#ffa8cd",
           pinkHover: "#f695be",
-          pinkInk: "#1a0e2e",        // text on pink
+          pinkInk: "#1a0e2e", // text on pink button
           purple: "#7868f4",
           purpleDeep: "#1f0843",
           lavender: "#c4b5e8",
 
           // Semantic
-          green: "#4ade80",
-          red: "#f87171",
-          amber: "#fb923c"
+          green: "#22c55e",
+          red: "#ef4444",
+          amber: "#f59e0b",
+          cyan: "#06b6d4"
         }
       },
       fontFamily: {

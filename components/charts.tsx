@@ -18,23 +18,24 @@ import { colorFor } from "./member-chips";
 const PINK = "#ffa8cd";
 const PURPLE = "#7868f4";
 const LAVENDER = "#c4b5e8";
-const TRACK = "#221a45";
-const AXIS = "#a89cc6";
-const CYAN = "#22d3ee";
-const ORANGE = "#fb923c";
-const GREEN = "#4ade80";
-const AMBER = "#facc15";
-const RED = "#f87171";
+const TRACK = "#ece6f7"; // light track for donuts
+const AXIS = "#6b5b8e"; // muted purple-gray on light
+const CYAN = "#06b6d4";
+const ORANGE = "#f97316";
+const GREEN = "#22c55e";
+const AMBER = "#f59e0b";
+const RED = "#ef4444";
 
 const TOOLTIP_STYLE = {
-  background: "#110d24",
-  border: "1px solid #2a2451",
+  background: "#ffffff",
+  border: "1px solid #d8cef0",
   borderRadius: 8,
-  color: "#f5f0ff",
-  fontSize: 11
+  color: "#1a0e2e",
+  fontSize: 11,
+  boxShadow: "0 4px 12px rgba(31,8,67,0.08)"
 };
-const TOOLTIP_LABEL = { color: "#cfc4ee", fontWeight: 500 };
-const TOOLTIP_ITEM = { color: "#f5f0ff" };
+const TOOLTIP_LABEL = { color: "#3d2f5e", fontWeight: 500 };
+const TOOLTIP_ITEM = { color: "#1a0e2e" };
 
 function fmtUsd(v: number | string) {
   const n = typeof v === "string" ? Number(v) : v;
@@ -125,15 +126,7 @@ export default function Charts({
   const aging = Object.entries(buckets).map(([name, value]) => ({ name, value }));
   const agingColors = [GREEN, AMBER, ORANGE, RED];
 
-  // 5. NEW — AM share of outstanding $ (per-AM colors via colorFor)
-  const amSharePairs = Array.from(byAmMap.entries()).filter(([k]) => k && k !== "(unassigned)");
-  const amShare = amSharePairs.map(([name, value]) => ({
-    name,
-    value: Math.round(value),
-    color: colorFor(name)
-  }));
-
-  // 6. NEW — Subscription status mix
+  // 5. NEW — Subscription status mix
   const subMap = new Map<string, number>();
   rows.forEach((r) => {
     const s = r.subscriptionStatus || "unknown";
@@ -170,7 +163,8 @@ export default function Charts({
   ].filter((d) => d.value > 0);
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+    <div className="space-y-2">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
       {/* Row 1 */}
       <ChartCard
         title="Outstanding by AM"
@@ -240,21 +234,6 @@ export default function Charts({
         </ResponsiveContainer>
       </ChartCard>
 
-      <ChartCard title="AM share of outstanding $" subtitle="Each slice in the AM's color">
-        <ResponsiveContainer width="100%" height="100%">
-          <PieChart>
-            <Pie data={amShare} dataKey="value" nameKey="name" innerRadius={42} outerRadius={72} paddingAngle={2} stroke="none">
-              {amShare.map((d, i) => (
-                <Cell key={i} fill={d.color} />
-              ))}
-              <LabelList dataKey="value" position="outside" fill="#cfc4ee" fontSize={10} formatter={(v: any) => fmtUsd(v)} />
-            </Pie>
-            <Legend verticalAlign="bottom" iconSize={8} wrapperStyle={{ fontSize: 10 }} />
-            <Tooltip formatter={(v: any) => fmtUsd(v)} contentStyle={TOOLTIP_STYLE} labelStyle={TOOLTIP_LABEL} itemStyle={TOOLTIP_ITEM} />
-          </PieChart>
-        </ResponsiveContainer>
-      </ChartCard>
-
       <ChartCard title="Subscription status" subtitle="Across visible invoices">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
@@ -262,7 +241,7 @@ export default function Charts({
               {subMix.map((d, i) => (
                 <Cell key={i} fill={d.color} />
               ))}
-              <LabelList dataKey="value" position="outside" fill="#cfc4ee" fontSize={11} />
+              <LabelList dataKey="value" position="outside" fill="#3d2f5e" fontSize={11} />
             </Pie>
             <Legend verticalAlign="bottom" iconSize={8} wrapperStyle={{ fontSize: 10 }} />
             <Tooltip contentStyle={TOOLTIP_STYLE} labelStyle={TOOLTIP_LABEL} itemStyle={TOOLTIP_ITEM} />
@@ -278,7 +257,7 @@ export default function Charts({
               {statusMix.map((_, i) => (
                 <Cell key={i} fill={[PINK, ORANGE][i]} />
               ))}
-              <LabelList dataKey="value" position="outside" fill="#cfc4ee" fontSize={11} />
+              <LabelList dataKey="value" position="outside" fill="#3d2f5e" fontSize={11} />
             </Pie>
             <Legend verticalAlign="bottom" iconSize={8} wrapperStyle={{ fontSize: 10 }} />
             <Tooltip contentStyle={TOOLTIP_STYLE} labelStyle={TOOLTIP_LABEL} itemStyle={TOOLTIP_ITEM} />
@@ -286,6 +265,11 @@ export default function Charts({
         </ResponsiveContainer>
       </ChartCard>
 
+      </div>
+
+      {/* Last row — 2 donuts in a wider 2-up grid so the layout reads as
+          intentional rather than a half-empty 3-up row. */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
       <ChartCard title="ACH status" subtitle="In Progress vs none">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
@@ -293,7 +277,7 @@ export default function Charts({
               {achSplit.map((_, i) => (
                 <Cell key={i} fill={[CYAN, TRACK][i]} />
               ))}
-              <LabelList dataKey="value" position="outside" fill="#cfc4ee" fontSize={11} />
+              <LabelList dataKey="value" position="outside" fill="#3d2f5e" fontSize={11} />
             </Pie>
             <Legend verticalAlign="bottom" iconSize={8} wrapperStyle={{ fontSize: 10 }} />
             <Tooltip contentStyle={TOOLTIP_STYLE} labelStyle={TOOLTIP_LABEL} itemStyle={TOOLTIP_ITEM} />
@@ -308,13 +292,14 @@ export default function Charts({
               {autoMix.map((_, i) => (
                 <Cell key={i} fill={[GREEN, RED, LAVENDER][i % 3]} />
               ))}
-              <LabelList dataKey="value" position="outside" fill="#cfc4ee" fontSize={11} />
+              <LabelList dataKey="value" position="outside" fill="#3d2f5e" fontSize={11} />
             </Pie>
             <Legend verticalAlign="bottom" iconSize={8} wrapperStyle={{ fontSize: 10 }} />
             <Tooltip contentStyle={TOOLTIP_STYLE} labelStyle={TOOLTIP_LABEL} itemStyle={TOOLTIP_ITEM} />
           </PieChart>
         </ResponsiveContainer>
       </ChartCard>
+      </div>
     </div>
   );
 }

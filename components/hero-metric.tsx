@@ -6,9 +6,9 @@ function fmtUsd(n: number) {
 }
 
 /**
- * Hero metric card — multi-segment donut showing severity breakdown across the
- * visible window: ACH-in-recovery (pink) / payment_due manual (purple) /
- * not_paid (orange) / multi-month (cyan). Plus four supporting numbers.
+ * Hero card — total outstanding is the dominant left-side display number.
+ * ACH recovery is minimized to a small chip on the right (compact donut +
+ * percentage + ratio).
  */
 export default function HeroMetric({
   rows,
@@ -18,176 +18,109 @@ export default function HeroMetric({
   multiMonthSet: Set<string>;
 }) {
   const total = rows.length;
-
-  // Severity buckets — each row falls in exactly one bucket.
-  let ach = 0;
-  let multi = 0;
-  let notPaid = 0;
-  let due = 0;
-  for (const r of rows) {
-    if (r.achStatus === "In Progress") ach++;
-    else if (multiMonthSet.has(r.entityId || r.customerId)) multi++;
-    else if (r.status === "not_paid") notPaid++;
-    else due++;
-  }
-
-  const outstanding = rows.reduce((s, r) => s + (r.amountDue || 0), 0);
-  const stillManual = total - ach;
+  const customers = new Set(rows.map((r) => r.customerId)).size;
+  const ach = rows.filter((r) => r.achStatus === "In Progress").length;
   const ratio = total ? ach / total : 0;
+  const outstanding = rows.reduce((s, r) => s + (r.amountDue || 0), 0);
+  const months = Array.from(new Set(rows.map((r) => r.invoiceMonth).filter(Boolean)));
+  const monthsLabel =
+    months.length === 0
+      ? ""
+      : months.length === 1
+      ? `· ${months[0]}`
+      : `· ${months[0]} → ${months[months.length - 1]}`;
 
-  // Donut segments in pixels along the circumference
-  const radius = 60;
-  const stroke = 14;
+  // Compact donut on the right
+  const radius = 22;
+  const stroke = 6;
   const C = 2 * Math.PI * radius;
-  const segs: { color: string; value: number }[] = [
-    { color: "#ffa8cd", value: ach }, // pink — ACH recovery
-    { color: "#7868f4", value: due }, // purple — payment_due manual
-    { color: "#fb923c", value: notPaid }, // orange — not_paid
-    { color: "#22d3ee", value: multi } // cyan — multi-month
-  ].filter((s) => s.value > 0);
-
-  // Build dasharray + offset chain
-  let cumulative = 0;
-  const arcs = segs.map((s) => {
-    const len = total ? (s.value / total) * C : 0;
-    const dasharray = `${len} ${C - len}`;
-    const dashoffset = -cumulative;
-    cumulative += len;
-    return { color: s.color, dasharray, dashoffset };
-  });
+  const dash = C * ratio;
 
   return (
     <div
-      className="rounded-2xl p-6 md:p-8 relative overflow-hidden"
+      className="rounded-2xl px-6 py-7 md:px-8 md:py-8 relative overflow-hidden"
       style={{
         background:
-          "linear-gradient(135deg, rgba(120,104,244,0.16) 0%, rgba(255,168,205,0.10) 50%, rgba(34,211,238,0.06) 100%), #110d24",
-        border: "1px solid #2a2451"
+          "linear-gradient(135deg, rgba(120,104,244,0.10) 0%, rgba(255,168,205,0.10) 50%, rgba(34,211,238,0.06) 100%), #ffffff",
+        border: "1px solid #e9e3f5",
+        boxShadow: "0 1px 3px rgba(31,8,67,0.05)"
       }}
     >
-      <div className="flex items-center justify-between mb-5">
-        <div className="text-[11px] tracking-[0.18em] uppercase text-zoca-textMuted font-medium">
-          <span className="inline-block w-1.5 h-1.5 rounded-full bg-zoca-pink mr-2 align-middle" />
-          ACH Recovery · severity breakdown
+      <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-6 md:gap-10 items-start">
+        {/* LEFT — total outstanding (hero) */}
+        <div>
+          <div className="text-[11px] tracking-[0.18em] uppercase text-zoca-textMuted font-medium flex items-center gap-2">
+            <span className="inline-block w-1.5 h-1.5 rounded-full bg-zoca-pink" />
+            Total outstanding
+          </div>
+          <div
+            className="font-display font-bold leading-none tabnum mt-3"
+            style={{ fontSize: "clamp(44px, 6vw, 64px)" }}
+          >
+            {fmtUsd(outstanding)}
+          </div>
+          <div className="text-[13px] text-zoca-textSecondary mt-3">
+            across{" "}
+            <span className="text-zoca-text font-medium">
+              {total.toLocaleString()} invoices
+            </span>{" "}
+            ·{" "}
+            <span className="text-zoca-text font-medium">
+              {customers.toLocaleString()} customers
+            </span>{" "}
+            <span className="text-zoca-textMuted">{monthsLabel}</span>
+          </div>
         </div>
-        <div className="hidden md:flex items-center gap-3 text-[11px]">
-          <Legend color="#ffa8cd" label="ACH" />
-          <Legend color="#7868f4" label="Due" />
-          <Legend color="#fb923c" label="Unpaid" />
-          <Legend color="#22d3ee" label="Multi-month" />
-        </div>
-      </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-[auto_1fr_auto_auto_auto] gap-x-10 gap-y-6 items-center">
-        {/* Donut */}
-        <div className="relative w-[170px] h-[170px] mx-auto md:mx-0">
-          <svg viewBox="0 0 160 160" className="w-full h-full -rotate-90">
-            <circle
-              cx="80"
-              cy="80"
-              r={radius}
-              fill="none"
-              stroke="#2a2451"
-              strokeWidth={stroke}
-            />
-            {arcs.map((a, i) => (
+        {/* RIGHT — minimized ACH recovery chip */}
+        <div
+          className="flex items-center gap-3 px-4 py-3 rounded-xl self-start"
+          style={{
+            background: "rgba(255,255,255,0.6)",
+            border: "1px solid #e9e3f5",
+            backdropFilter: "blur(2px)"
+          }}
+        >
+          <div className="relative w-[60px] h-[60px] flex-shrink-0">
+            <svg viewBox="0 0 60 60" className="w-full h-full -rotate-90">
               <circle
-                key={i}
-                cx="80"
-                cy="80"
+                cx="30"
+                cy="30"
                 r={radius}
                 fill="none"
-                stroke={a.color}
+                stroke="#ece6f7"
                 strokeWidth={stroke}
-                strokeDasharray={a.dasharray}
-                strokeDashoffset={a.dashoffset}
-                strokeLinecap="butt"
               />
-            ))}
-          </svg>
-          <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <div className="font-display text-[44px] font-bold leading-none">
-              {Math.round(ratio * 100)}
-              <span className="text-[20px] align-top">%</span>
+              <circle
+                cx="30"
+                cy="30"
+                r={radius}
+                fill="none"
+                stroke="#7868f4"
+                strokeWidth={stroke}
+                strokeDasharray={`${dash} ${C - dash}`}
+                strokeLinecap="round"
+              />
+            </svg>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span className="font-display font-bold text-[14px] tabnum text-zoca-purple">
+                {Math.round(ratio * 100)}%
+              </span>
             </div>
-            <div className="text-[10px] tracking-[0.18em] uppercase text-zoca-textMuted mt-1 font-medium">
-              In ACH
+          </div>
+          <div>
+            <div className="text-[10px] tracking-[0.14em] uppercase text-zoca-textMuted font-medium">
+              ACH recovery
+            </div>
+            <div className="font-display font-bold text-[16px] mt-0.5 tabnum text-zoca-text">
+              {ach} <span className="text-zoca-textMuted font-normal">/ {total}</span>
+            </div>
+            <div className="text-[10px] text-zoca-textMuted mt-0.5">
+              invoices in flight
             </div>
           </div>
         </div>
-
-        {/* Headline */}
-        <div>
-          <div className="font-display text-[34px] font-bold leading-tight tabnum">
-            <span style={{ color: "#ffa8cd" }}>{ach.toLocaleString()}</span>{" "}
-            <span className="text-zoca-textMuted">/ {total.toLocaleString()}</span>
-          </div>
-          <div className="text-[12px] text-zoca-textSecondary mt-1">
-            invoices currently being collected via ACH
-          </div>
-        </div>
-
-        <Stat
-          label="Still Manual"
-          value={stillManual.toLocaleString()}
-          sub={`${total ? Math.round((stillManual / total) * 100) : 0}% of window`}
-          accent="#7868f4"
-        />
-        <Stat
-          label="Outstanding"
-          value={fmtUsd(outstanding)}
-          sub="across all visible rows"
-          accent="#fb923c"
-        />
-        <Stat
-          label="Multi-month"
-          value={
-            new Set(
-              rows
-                .filter((r) => multiMonthSet.has(r.entityId || r.customerId))
-                .map((r) => r.entityId || r.customerId)
-            ).size.toLocaleString()
-          }
-          sub="customers spanning ≥2 months"
-          accent="#22d3ee"
-        />
       </div>
     </div>
-  );
-}
-
-function Stat({
-  label,
-  value,
-  sub,
-  accent
-}: {
-  label: string;
-  value: string;
-  sub: string;
-  accent: string;
-}) {
-  return (
-    <div className="border-l pl-4" style={{ borderColor: `${accent}55` }}>
-      <div
-        className="text-[10px] tracking-[0.18em] uppercase font-medium"
-        style={{ color: accent }}
-      >
-        {label}
-      </div>
-      <div className="font-display text-[26px] font-bold leading-tight mt-1 tabnum">
-        {value}
-      </div>
-      <div className="text-[11px] text-zoca-textMuted mt-1">{sub}</div>
-    </div>
-  );
-}
-
-function Legend({ color, label }: { color: string; label: string }) {
-  return (
-    <span className="inline-flex items-center gap-1.5 text-zoca-textMuted">
-      <span className="w-2 h-2 rounded-sm" style={{ background: color }} />
-      {label}
-    </span>
   );
 }

@@ -3,24 +3,24 @@
 @tailwind utilities;
 
 /* ============================================================
-   Zoca dark theme — modern, data-dense
-   Geometric sans (Inter) + JetBrains Mono for IDs/numbers.
+   Zoca light theme — bright canvas, vibrant accents.
+   Bricolage Grotesque (display) · Inter (body) · JetBrains Mono (numbers).
    ============================================================ */
 
 html, body {
-  background: #0a0613;
-  color: #f5f0ff;
+  background: #faf9fc;
+  color: #1a0e2e;
   font-feature-settings: "ss01", "cv11";
   letter-spacing: -0.005em;
 }
 
 body {
   background-image:
-    radial-gradient(70% 35% at 0% 0%, rgba(120, 104, 244, 0.22) 0%, transparent 65%),
-    radial-gradient(60% 35% at 100% 0%, rgba(255, 168, 205, 0.18) 0%, transparent 65%),
-    radial-gradient(45% 35% at 100% 50%, rgba(34, 211, 238, 0.10) 0%, transparent 70%),
-    radial-gradient(50% 35% at 0% 80%, rgba(251, 146, 60, 0.08) 0%, transparent 70%),
-    radial-gradient(60% 40% at 50% 110%, rgba(74, 222, 128, 0.06) 0%, transparent 70%);
+    radial-gradient(70% 35% at 0% 0%, rgba(120, 104, 244, 0.10) 0%, transparent 65%),
+    radial-gradient(60% 35% at 100% 0%, rgba(255, 168, 205, 0.10) 0%, transparent 65%),
+    radial-gradient(45% 35% at 100% 50%, rgba(34, 211, 238, 0.06) 0%, transparent 70%),
+    radial-gradient(50% 35% at 0% 80%, rgba(251, 146, 60, 0.05) 0%, transparent 70%),
+    radial-gradient(60% 40% at 50% 110%, rgba(74, 222, 128, 0.04) 0%, transparent 70%);
   background-attachment: fixed;
   min-height: 100vh;
 }
@@ -29,15 +29,16 @@ h1, h2, h3, .display {
   font-family: var(--font-display), "Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif;
   letter-spacing: -0.025em;
   font-weight: 700;
-  color: #f5f0ff;
+  color: #1a0e2e;
 }
 
 /* ---------- Cards ---------- */
 .card-zoca {
-  background: #110d24;
-  border: 1px solid #1f1a3d;
+  background: #ffffff;
+  border: 1px solid #e9e3f5;
   border-radius: 10px;
   padding: 12px 14px;
+  box-shadow: 0 1px 2px rgba(31, 8, 67, 0.04);
 }
 
 /* ---------- Buttons ---------- */
@@ -51,7 +52,9 @@ h1, h2, h3, .display {
   border-radius: 6px;
   font-weight: 600;
   font-size: 12px;
-  transition: background .15s ease;
+  border: 1px solid #ffa8cd;
+  transition: background .15s ease, transform .15s ease;
+  box-shadow: 0 1px 2px rgba(255, 168, 205, 0.30);
 }
 .btn-zoca:hover { background: #f695be; }
 .btn-zoca:disabled { opacity: 0.55; cursor: not-allowed; }
@@ -60,16 +63,16 @@ h1, h2, h3, .display {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: transparent;
-  color: #cfc4ee;
+  background: #ffffff;
+  color: #3d2f5e;
   padding: 6px 12px;
-  border: 1px solid #2a2451;
+  border: 1px solid #d8cef0;
   border-radius: 6px;
   font-weight: 500;
   font-size: 12px;
   transition: background .15s ease, border-color .15s ease, color .15s ease;
 }
-.btn-ghost:hover { background: #1a1438; border-color: #3a3070; color: #f5f0ff; }
+.btn-ghost:hover { background: #f5f1fb; border-color: #b9aae0; color: #1a0e2e; }
 
 /* ---------- Tabs ---------- */
 .tab-pill {
@@ -77,7 +80,7 @@ h1, h2, h3, .display {
   border-radius: 999px;
   font-weight: 500;
   font-size: 12px;
-  color: #a89cc6;
+  color: #6b5b8e;
   background: transparent;
   transition: color .15s ease, background .15s ease;
   border: none;
@@ -85,11 +88,12 @@ h1, h2, h3, .display {
   align-items: center;
   gap: 5px;
 }
-.tab-pill:hover { color: #f5f0ff; }
+.tab-pill:hover { color: #1a0e2e; background: rgba(120, 104, 244, 0.06); }
 .tab-pill[aria-selected="true"] {
   background: #ffa8cd;
   color: #1a0e2e;
   font-weight: 600;
+  box-shadow: 0 1px 3px rgba(255, 168, 205, 0.30);
 }
 
 /* ---------- Pills ---------- */
@@ -109,16 +113,16 @@ table.zoca-tbl {
   font-family: var(--font-inter), Inter, sans-serif;
 }
 table.zoca-tbl thead th {
-  background: #18133a;
-  color: #cfc4ee;
-  font-weight: 500;
+  background: #f5f1fb;
+  color: #3d2f5e;
+  font-weight: 600;
   font-size: 10px;
   letter-spacing: 0.10em;
   text-transform: uppercase;
   padding: 9px 10px;
   text-align: left;
   white-space: nowrap;
-  border-bottom: 1px solid #2a2451;
+  border-bottom: 1px solid #d8cef0;
   position: sticky;
   top: 0;
   z-index: 2;
@@ -126,74 +130,75 @@ table.zoca-tbl thead th {
 table.zoca-tbl tbody td {
   font-size: 12px;
   padding: 7px 10px;
-  border-top: 1px solid #1f1a3d;
+  border-top: 1px solid #ece6f7;
   vertical-align: middle;
-  color: #f5f0ff;
+  color: #1a0e2e;
 }
-table.zoca-tbl tbody tr:hover { background: #1a1438; }
-table.zoca-tbl tbody tr.multi-month { background: rgba(255, 168, 205, 0.04); }
-table.zoca-tbl tbody tr.multi-month:hover { background: rgba(255, 168, 205, 0.07); }
+table.zoca-tbl tbody tr:hover { background: #f5f1fb; }
+table.zoca-tbl tbody tr.multi-month { background: rgba(255, 168, 205, 0.10); }
+table.zoca-tbl tbody tr.multi-month:hover { background: rgba(255, 168, 205, 0.18); }
 
 /* ---------- Inputs ---------- */
 .input-zoca {
   height: 30px;
   padding: 0 10px;
   font-size: 12px;
-  color: #cfc4ee;
-  background: #0d0820;
-  border: 1px solid #2a2451;
+  color: #1a0e2e;
+  background: #ffffff;
+  border: 1px solid #d8cef0;
   border-radius: 6px;
-  transition: border-color .15s ease, background .15s ease;
+  transition: border-color .15s ease, box-shadow .15s ease;
 }
-.input-zoca::placeholder { color: #6b5b8e; }
-.input-zoca:hover { border-color: #3a3070; }
+.input-zoca::placeholder { color: #9b8bc0; }
+.input-zoca:hover { border-color: #b9aae0; }
 .input-zoca:focus {
   outline: none;
   border-color: #7868f4;
-  background: #110d24;
+  box-shadow: 0 0 0 3px rgba(120, 104, 244, 0.15);
 }
 
 select.input-zoca {
   appearance: none;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b5b8e' stroke-width='2'><polyline points='6 9 12 15 18 9'/></svg>");
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239b8bc0' stroke-width='2'><polyline points='6 9 12 15 18 9'/></svg>");
   background-repeat: no-repeat;
   background-position: right 8px center;
   padding-right: 26px;
 }
 select.input-zoca option {
-  background: #0d0820;
-  color: #f5f0ff;
+  background: #ffffff;
+  color: #1a0e2e;
 }
 
-/* ---------- Recharts overrides (dark) ---------- */
+/* ---------- Recharts overrides (light) ---------- */
 .recharts-tooltip-wrapper {
   outline: none !important;
 }
 .recharts-default-tooltip {
-  background: #110d24 !important;
-  border: 1px solid #2a2451 !important;
+  background: #ffffff !important;
+  border: 1px solid #d8cef0 !important;
   border-radius: 8px !important;
   font-size: 11px !important;
   padding: 6px 10px !important;
+  box-shadow: 0 4px 12px rgba(31, 8, 67, 0.08) !important;
 }
 .recharts-tooltip-label,
 .recharts-tooltip-item {
-  color: #f5f0ff !important;
+  color: #1a0e2e !important;
 }
 .recharts-cartesian-axis-tick-value {
-  fill: #a89cc6 !important;
+  fill: #6b5b8e !important;
   font-size: 11px !important;
 }
 .recharts-legend-item-text {
-  color: #a89cc6 !important;
+  color: #3d2f5e !important;
   font-size: 11px !important;
 }
 
 /* ---------- Scrollbars ---------- */
 ::-webkit-scrollbar { width: 10px; height: 10px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #2a2451; border-radius: 999px; border: 2px solid #0a0613; }
-::-webkit-scrollbar-thumb:hover { background: #3a3070; }
+::-webkit-scrollbar-thumb { background: #d8cef0; border-radius: 999px; border: 2px solid #faf9fc; }
+::-webkit-scrollbar-thumb:hover { background: #b9aae0; }
 
 /* ---------- Tabular numerals on .num ---------- */
 .tabnum { font-variant-numeric: tabular-nums; }
