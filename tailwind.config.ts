@@ -41,7 +41,8 @@ const config: Config = {
       },
       fontFamily: {
         sans: ["var(--font-inter)", "Inter", "ui-sans-serif", "system-ui", "sans-serif"],
-        mono: ["var(--font-mono)", "JetBrains Mono", "ui-monospace", "monospace"]
+        mono: ["var(--font-mono)", "JetBrains Mono", "ui-monospace", "monospace"],
+        display: ["var(--font-display)", "Bricolage Grotesque", "ui-sans-serif", "system-ui", "sans-serif"]
       },
       borderRadius: {
         zoca: "0.5rem"

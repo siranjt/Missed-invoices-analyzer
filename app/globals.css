@@ -16,15 +16,19 @@ html, body {
 
 body {
   background-image:
-    radial-gradient(60% 30% at 0% 0%, rgba(120, 104, 244, 0.10) 0%, transparent 70%),
-    radial-gradient(50% 30% at 100% 0%, rgba(255, 168, 205, 0.06) 0%, transparent 70%);
+    radial-gradient(70% 35% at 0% 0%, rgba(120, 104, 244, 0.22) 0%, transparent 65%),
+    radial-gradient(60% 35% at 100% 0%, rgba(255, 168, 205, 0.18) 0%, transparent 65%),
+    radial-gradient(45% 35% at 100% 50%, rgba(34, 211, 238, 0.10) 0%, transparent 70%),
+    radial-gradient(50% 35% at 0% 80%, rgba(251, 146, 60, 0.08) 0%, transparent 70%),
+    radial-gradient(60% 40% at 50% 110%, rgba(74, 222, 128, 0.06) 0%, transparent 70%);
   background-attachment: fixed;
   min-height: 100vh;
 }
 
 h1, h2, h3, .display {
-  letter-spacing: -0.022em;
-  font-weight: 600;
+  font-family: var(--font-display), "Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: -0.025em;
+  font-weight: 700;
   color: #f5f0ff;
 }
 

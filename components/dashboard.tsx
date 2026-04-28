@@ -2,7 +2,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { InvoiceRow, AnnotationsMap } from "@/lib/types";
-import KpiCards from "./kpi-cards";
+import Hero from "./hero";
+import MemberChips from "./member-chips";
+import HeroMetric from "./hero-metric";
+import KpiSparklineGrid from "./kpi-sparkline-grid";
 import Charts from "./charts";
 import Filters, { type FilterState } from "./filters";
 import InvoicesTable from "./invoices-table";
@@ -237,33 +240,67 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="space-y-4">
-      <header className="flex items-center justify-between flex-wrap gap-3">
-        <div>
-          <div className="text-[10px] tracking-[0.18em] text-zoca-purple uppercase font-medium">
-            Zoca · Finance
-          </div>
-          <h1 className="display text-[22px] font-semibold text-zoca-text mt-0.5">
-            Missed invoice tracker
-          </h1>
-          <p className="text-[11px] text-zoca-textDim mt-1">
-            Live Chargebee + Metabase
-            {fetchedAt ? `  ·  last fetch ${new Date(fetchedAt).toLocaleString()}` : ""}
-          </p>
+    <div className="space-y-8">
+      {/* Top wordmark band */}
+      <div className="flex items-center justify-between text-[12px] text-zoca-textMuted">
+        <div className="flex items-center gap-2.5">
+          <span className="font-display text-zoca-text font-bold tracking-tight text-[16px]">
+            ZOCA
+          </span>
+          <span className="text-zoca-textDim">·  Missed invoice tracker</span>
         </div>
-        <div className="flex gap-2 items-center">
-          <button
-            onClick={() => loadInvoices(true)}
-            disabled={refreshing}
-            className="btn-ghost"
-          >
-            <RefreshCw size={13} className={refreshing ? "animate-spin" : ""} />
-            Refresh
-          </button>
-          <ExportButton rows={filtered} annotations={annotations} multiMonthSet={multiMonthSet} />
+        <div className="flex items-center gap-4">
+          <span className="hidden sm:inline">Customer Success team</span>
+          <span className="text-zoca-textDim">·</span>
+          <span className="hidden sm:inline">Live Chargebee + Metabase</span>
           <UserMenu />
         </div>
-      </header>
+      </div>
+
+      {/* Editorial hero */}
+      <Hero rows={rows} />
+
+      {/* Window selector pill */}
+      <div className="flex items-center justify-center">
+        <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-zoca-surface border border-zoca-border">
+          <span className="text-[10px] tracking-[0.18em] text-zoca-textMuted uppercase font-medium">
+            Window
+          </span>
+          <span className="text-[12px] font-semibold text-zoca-text">
+            {activeTab === "All" ? "All open invoices" : activeTab}
+          </span>
+          <span className="text-zoca-textDim text-[10px]">▾</span>
+        </div>
+      </div>
+
+      {/* Member chips */}
+      {!firstLoad && (
+        <MemberChips
+          rows={rows}
+          activeAm={filters.am}
+          onSelect={(am) => {
+            setFilters((f) => ({ ...f, am }));
+            if (am) {
+              requestAnimationFrame(() =>
+                tableRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
+              );
+            }
+          }}
+        />
+      )}
+
+      {/* Action buttons (right-aligned) */}
+      <div className="flex items-center justify-end gap-2">
+        <button
+          onClick={() => loadInvoices(true)}
+          disabled={refreshing}
+          className="btn-ghost"
+        >
+          <RefreshCw size={13} className={refreshing ? "animate-spin" : ""} />
+          Refresh
+        </button>
+        <ExportButton rows={filtered} annotations={annotations} multiMonthSet={multiMonthSet} />
+      </div>
 
       {error && (
         <div
@@ -278,10 +315,10 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* Tabs */}
+      {/* Wide rounded tab bar */}
       <div
         role="tablist"
-        className="inline-flex gap-1 flex-wrap p-1 rounded-full bg-zoca-surface border border-zoca-border w-fit"
+        className="flex items-center gap-1 flex-wrap p-1.5 rounded-full bg-zoca-surface/70 border border-zoca-border"
       >
         {TABS.map((t) => (
           <button
@@ -295,6 +332,10 @@ export default function Dashboard() {
             <span className="opacity-70 text-[11px] tabnum">{tabCounts[t]}</span>
           </button>
         ))}
+        <div className="ml-auto text-[11px] text-zoca-textDim pr-3">
+          {filtered.length.toLocaleString()} / {rows.length.toLocaleString()} ·{" "}
+          {fetchedAt ? new Date(fetchedAt).toLocaleTimeString() : "—"}
+        </div>
       </div>
 
       {firstLoad ? (
@@ -306,9 +347,18 @@ export default function Dashboard() {
         </>
       ) : (
         <>
-          <KpiCards rows={filtered} multiMonthSet={multiMonthSet} />
+          {/* Hero metric card */}
+          <HeroMetric rows={filtered} multiMonthSet={multiMonthSet} />
+
+          {/* Sparkline KPI grid */}
+          <KpiSparklineGrid rows={filtered} multiMonthSet={multiMonthSet} />
+
+          {/* Existing charts grid (kept) */}
           <Charts rows={filtered} onAmClick={handleAmClick} />
+
+          {/* Existing filters bar (kept) */}
           <Filters value={filters} onChange={setFilters} rows={rows} />
+
           {filters.am && (
             <div className="flex items-center gap-2 text-[11px]">
               <span className="text-zoca-textMuted">Drilled into AM:</span>
@@ -328,6 +378,8 @@ export default function Dashboard() {
               </button>
             </div>
           )}
+
+          {/* Existing 21-column table (kept) */}
           <div ref={tableRef}>
             <InvoicesTable
               rows={filtered}
