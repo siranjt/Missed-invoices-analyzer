@@ -68,9 +68,22 @@ export type OpenTicket = {
   customerExternalIds: string[];
 };
 
+// Ticket templates we never want to surface in the dashboard's Tickets column.
+// Matched case-insensitively against the start of the ticket title so we catch
+// "Write off the payment", "Refund Request", "Refund - <client>", etc.
+const EXCLUDED_TITLE_PREFIXES = ["write off", "write-off", "writeoff", "refund"];
+
+function shouldIncludeTicket(t: { title: string }): boolean {
+  const title = (t.title || "").toLowerCase().trim();
+  return !EXCLUDED_TITLE_PREFIXES.some((prefix) => title.startsWith(prefix));
+}
+
 /**
  * Fetch active Finance tickets — Todo (`unstarted`) + In Progress / In Review
  * (`started`). Backlog, Done, and Canceled are intentionally excluded.
+ * Write-off and refund tickets are also dropped (see EXCLUDED_TITLE_PREFIXES)
+ * because they describe accounting actions, not active customer issues an AM
+ * needs to chase.
  * Returns up to 250 (Linear's per-request max). If you need more, add cursor
  * pagination — but the Finance team currently has fewer than 250 active at
  * any time.
@@ -103,16 +116,18 @@ export async function fetchOpenFinanceTickets(): Promise<OpenTicket[]> {
   `;
   const data = await lq<any>(query, { teamId: FINANCE_TEAM_ID });
   const nodes: any[] = data?.team?.issues?.nodes || [];
-  return nodes.map((n) => ({
-    id: n.identifier,
-    title: n.title,
-    url: n.url,
-    description: n.description || "",
-    updatedAt: n.updatedAt,
-    customerExternalIds: (n.customerNeeds?.nodes || []).flatMap(
-      (cn: any) => cn?.customer?.externalIds || []
-    )
-  }));
+  return nodes
+    .map((n) => ({
+      id: n.identifier,
+      title: n.title,
+      url: n.url,
+      description: n.description || "",
+      updatedAt: n.updatedAt,
+      customerExternalIds: (n.customerNeeds?.nodes || []).flatMap(
+        (cn: any) => cn?.customer?.externalIds || []
+      )
+    }))
+    .filter(shouldIncludeTicket);
 }
 
 // Match every variant Zoca uses for "entity id" in Linear ticket bodies:
