@@ -1,6 +1,7 @@
 # Missed Invoice Tracker
 
 Live web dashboard over Zoca's Chargebee + Metabase data. Mirrors the daily Excel report.
+Dark Zoca-branded theme (Inter + JetBrains Mono, tighter density, sticky table header, click-to-drill on AM bars).
 
 ## Stack
 Next.js 14 (App Router) · TypeScript · Tailwind · Recharts · xlsx-js-style · Neon Postgres (annotations) · NextAuth (Google, @zoca.com only)
