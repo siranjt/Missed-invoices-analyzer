@@ -269,10 +269,41 @@ export default function InvoicesTable({
                   />
                 </td>
                 <td>
-                  <EditableText
-                    value={a.tickets || ""}
-                    onSave={(v) => onSave(r.invoiceNumber, { tickets: v })}
-                  />
+                  <div className="flex flex-col gap-1.5 min-w-[200px]">
+                    {r.latestTicket ? (
+                      <a
+                        href={r.latestTicket.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        title={r.latestTicket.title}
+                        className="inline-flex items-center gap-2 px-2 py-1 rounded-md text-[11px] font-medium transition-colors group"
+                        style={{
+                          background: "rgba(120, 104, 244, 0.12)",
+                          border: "1px solid rgba(120, 104, 244, 0.30)",
+                          color: "#5d4fd4"
+                        }}
+                      >
+                        <span
+                          className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                          style={{ background: "#7868f4" }}
+                        />
+                        <span className="font-mono font-semibold whitespace-nowrap">
+                          {r.latestTicket.id}
+                        </span>
+                        <span className="truncate max-w-[160px] text-zoca-text group-hover:underline underline-offset-2">
+                          {r.latestTicket.title}
+                        </span>
+                      </a>
+                    ) : (
+                      <span className="text-[10px] text-zoca-textDim italic px-1">
+                        no active ticket
+                      </span>
+                    )}
+                    <EditableText
+                      value={a.tickets || ""}
+                      onSave={(v) => onSave(r.invoiceNumber, { tickets: v })}
+                    />
+                  </div>
                 </td>
               </tr>
             );

@@ -1,5 +1,11 @@
 export type InvoiceStatus = "payment_due" | "not_paid";
 
+export type LatestTicket = {
+  id: string;        // e.g. "FIN-3899"
+  title: string;     // ticket title
+  url: string;       // Linear issue URL
+};
+
 export type InvoiceRow = {
   customerId: string;
   entityId: string;
@@ -18,6 +24,8 @@ export type InvoiceRow = {
   customerCompany: string;
   amountDue: number;
   status: InvoiceStatus;
+  /** Most-recent open Finance ticket matched to this row's entity_id, if any. */
+  latestTicket?: LatestTicket;
 };
 
 export type InvoiceAnnotation = {

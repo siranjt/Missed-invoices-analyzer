@@ -6,6 +6,11 @@ import {
   fetchSubscriptions
 } from "@/lib/chargebee";
 import { fetchBaseSheet, indexBaseSheet } from "@/lib/metabase";
+import {
+  fetchOpenFinanceTickets,
+  indexTicketsByEntity,
+  type OpenTicket
+} from "@/lib/linear";
 import { buildInvoiceRows } from "@/lib/enrich";
 import type { InvoicesResponse } from "@/lib/types";
 
@@ -67,22 +72,31 @@ export async function GET(req: NextRequest) {
   const stream = new ReadableStream({
     async start(controller) {
       try {
-        // Phase 0: invoices + transactions + BaseSheet (parallel).
-        const [invoices, achTx, baseRows] = await Promise.all([
+        // Phase 0: invoices + transactions + BaseSheet + Linear tickets (parallel).
+        // Linear is fault-tolerant — if it errors (missing API key, timeout,
+        // schema change), we just skip ticket enrichment rather than fail the
+        // whole pipeline.
+        const [invoices, achTx, baseRows, tickets] = await Promise.all([
           fetchOpenInvoices(),
           fetchInProgressTransactions(),
-          fetchBaseSheet()
+          fetchBaseSheet(),
+          fetchOpenFinanceTickets().catch((e) => {
+            console.warn("[invoices] Linear fetch failed:", e?.message || e);
+            return [] as OpenTicket[];
+          })
         ]);
         const baseSheet = indexBaseSheet(baseRows);
+        const ticketsByEntity = indexTicketsByEntity(tickets);
 
-        // Phase 1: emit partial rows enriched only from BaseSheet so the UI
-        // has something to render quickly.
+        // Phase 1: emit partial rows enriched from BaseSheet + tickets so the
+        // UI has something to render quickly with ticket links already wired.
         const partial = buildInvoiceRows({
           invoices,
           customers: {},
           subs: {},
           achTransactions: achTx,
-          baseSheet
+          baseSheet,
+          ticketsByEntity
         });
         send(controller, { type: "partial", rows: partial });
 
@@ -100,7 +114,8 @@ export async function GET(req: NextRequest) {
           customers,
           subs,
           achTransactions: achTx,
-          baseSheet
+          baseSheet,
+          ticketsByEntity
         });
 
         const fetchedAt = new Date().toISOString();
