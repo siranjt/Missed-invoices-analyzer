@@ -34,10 +34,79 @@ export default function Dashboard() {
     setError(null);
     try {
       const r = await fetch(`/api/invoices${refresh ? "?refresh=1" : ""}`);
-      const data = await r.json();
-      if (!r.ok) throw new Error(data?.error || "Failed to load invoices");
-      setRows(data.rows || []);
-      setFetchedAt(data.fetchedAt || null);
+      if (!r.ok) {
+        // Try to read a JSON error body if present, else fall through.
+        let errMsg = `HTTP ${r.status}`;
+        try {
+          const txt = await r.text();
+          try {
+            const j = JSON.parse(txt);
+            errMsg = j?.error || errMsg;
+          } catch {
+            errMsg = txt.slice(0, 200) || errMsg;
+          }
+        } catch {}
+        throw new Error(errMsg);
+      }
+
+      const ct = r.headers.get("content-type") || "";
+
+      // NDJSON stream path (newline-delimited JSON, one event per line).
+      // Server emits { type: "partial", rows } then { type: "complete", rows, fetchedAt }.
+      if (ct.includes("ndjson") || ct.includes("text/plain")) {
+        if (!r.body) throw new Error("Empty response body");
+        const reader = r.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = "";
+        let gotAnyRows = false;
+
+        const handleLine = (line: string) => {
+          const trimmed = line.trim();
+          if (!trimmed) return;
+          let msg: any;
+          try {
+            msg = JSON.parse(trimmed);
+          } catch {
+            return;
+          }
+          if (msg.type === "error") {
+            throw new Error(msg.error || "Server error");
+          }
+          if (msg.type === "partial" || msg.type === "complete") {
+            if (Array.isArray(msg.rows)) {
+              setRows(msg.rows);
+              gotAnyRows = true;
+            }
+            if (msg.fetchedAt) setFetchedAt(msg.fetchedAt);
+            // First payload (usually partial) is enough to hide skeleton.
+            setLoading(false);
+          }
+        };
+
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          let nl;
+          while ((nl = buffer.indexOf("\n")) >= 0) {
+            const line = buffer.slice(0, nl);
+            buffer = buffer.slice(nl + 1);
+            handleLine(line);
+          }
+        }
+        // Flush any trailing partial line.
+        if (buffer.trim()) handleLine(buffer);
+
+        if (!gotAnyRows) {
+          throw new Error("Stream ended with no rows");
+        }
+      } else {
+        // Legacy single-JSON-object path.
+        const data = await r.json();
+        if (data?.error) throw new Error(data.error);
+        setRows(data.rows || []);
+        setFetchedAt(data.fetchedAt || null);
+      }
     } catch (e: any) {
       setError(String(e?.message || e));
     } finally {
