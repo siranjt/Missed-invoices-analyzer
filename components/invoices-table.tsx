@@ -191,21 +191,34 @@ export default function InvoicesTable({
                       target="_blank"
                       rel="noopener noreferrer"
                       title={r.latestTicket.title}
-                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-mono font-semibold border transition-colors"
-                      style={{
-                        background: "rgba(255,168,205,0.12)",
-                        color: "#ffa8cd",
-                        borderColor: "rgba(255,168,205,0.35)"
-                      }}
+                      className="block max-w-[260px] group"
                     >
-                      {r.latestTicket.id}
-                      <span style={{ opacity: 0.6 }}>↗</span>
+                      <span
+                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-mono font-semibold border transition-colors"
+                        style={{
+                          background: "rgba(255,168,205,0.12)",
+                          color: "#ffa8cd",
+                          borderColor: "rgba(255,168,205,0.35)"
+                        }}
+                      >
+                        {r.latestTicket.id}
+                        <span style={{ opacity: 0.6 }}>↗</span>
+                      </span>
+                      <div
+                        className="text-[11px] text-zoca-textMuted mt-1 leading-tight group-hover:text-zoca-text transition-colors"
+                        style={{
+                          display: "-webkit-box",
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: "vertical",
+                          overflow: "hidden",
+                          wordBreak: "break-word"
+                        }}
+                      >
+                        {r.latestTicket.title}
+                      </div>
                     </a>
                   ) : (
-                    <EditableText
-                      value={a.tickets || ""}
-                      onSave={(v) => onSave(r.invoiceNumber, { tickets: v })}
-                    />
+                    <span className="text-[11px] italic text-zoca-textDim">No tickets</span>
                   )}
                 </td>
               </tr>
