@@ -3,7 +3,6 @@ import { Download } from "lucide-react";
 import type { InvoiceRow, AnnotationsMap } from "@/lib/types";
 
 // Column order — same on every sheet so users see consistent shape.
-// Position 21 is intentionally a blank-header spacer column.
 const HEADERS = [
   "Customer Id",
   "Entity Id",
@@ -25,7 +24,6 @@ const HEADERS = [
   "Connection status",
   "Comments",
   "Old comments",
-  "",
   "Ticket URL"
 ];
 
@@ -63,7 +61,6 @@ function rowValues(r: InvoiceRow, ann: any) {
     ann?.connectionStatus || "",      // Connection status
     ann?.comments || "",              // Comments
     ann?.oldComments || "",           // Old comments
-    "",                               // (blank spacer column)
     r.latestTicket?.url || ""         // Ticket URL
   ];
 }
@@ -101,7 +98,6 @@ function styleSheet(XLSX: any, ws: any) {
     if (h === "Customer Email" || h === "Biz name" || h === "Customer Company") return { wch: 30 };
     if (h === "Ticket URL") return { wch: 60 };
     if (h === "Comments" || h === "Old comments" || h === "AM Comment") return { wch: 25 };
-    if (h === "") return { wch: 4 };
     return { wch: 18 };
   });
 }
