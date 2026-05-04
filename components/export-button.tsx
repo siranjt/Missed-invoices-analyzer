@@ -5,9 +5,10 @@ import type { InvoiceRow, AnnotationsMap } from "@/lib/types";
 const HEADERS_BASE = [
   "Customer Id","Entity Id","Biz name","Am name","Subscription status","Cancelling at",
   "Invoice Number","ACH status","Auto debit","AM Comment","Invoice Date",
-  "Customer First Name","Customer Email","Phone Number","Customer Company","Amount Due"
+  "Customer First Name","Customer Email","Phone Number","Customer Company","Amount Due",
+  "Ticket Id","Ticket Title","Ticket URL"
 ];
-const HEADERS_EXTRA = ["Caller","Connection status","Comments","Old comments","Tickets"];
+const HEADERS_EXTRA = ["Caller","Connection status","Comments","Old comments"];
 
 const HEADER_STYLE = {
   font: { name: "Arial", sz: 11, bold: true, color: { rgb: "FFFFFFFF" } },
@@ -19,11 +20,14 @@ function rowToBase(r: InvoiceRow, ann: any) {
   return [
     r.customerId, r.entityId, r.bizName, r.amName, r.subscriptionStatus, r.cancellingAt,
     r.invoiceNumber, r.achStatus, r.autoDebit, ann?.amComment || "", r.invoiceDate,
-    r.customerFirstName, r.customerEmail, r.phoneNumber, r.customerCompany, r.amountDue
+    r.customerFirstName, r.customerEmail, r.phoneNumber, r.customerCompany, r.amountDue,
+    r.latestTicket?.id || "",
+    r.latestTicket?.title || "",
+    r.latestTicket?.url || ""
   ];
 }
 function rowToExtra(ann: any) {
-  return [ann?.caller || "", ann?.connectionStatus || "", ann?.comments || "", ann?.oldComments || "", ann?.tickets || ""];
+  return [ann?.caller || "", ann?.connectionStatus || "", ann?.comments || "", ann?.oldComments || ""];
 }
 
 function styleSheet(XLSX: any, ws: any, headerLen: number, extraStart?: number) {
@@ -69,12 +73,14 @@ export default function ExportButton({
     const XLSX: any = await import("xlsx-js-style");
     const wb = XLSX.utils.book_new();
 
+    // Main: all rows
     const allBase = [HEADERS_BASE, ...rows.map((r) => rowToBase(r, annotations[r.invoiceNumber]))];
     const wsAll = XLSX.utils.aoa_to_sheet(allBase);
     styleSheet(XLSX, wsAll, HEADERS_BASE.length);
     XLSX.utils.book_append_sheet(wb, wsAll, "Miss-payment Sheet");
 
-    const months = ["May", "April", "March", "February"];
+    // Per-month base sheets (no annotations)
+    const months = ["May", "April", "March"];
     for (const m of months) {
       const mr = rows.filter((r) => r.invoiceMonth === m);
       const data = [HEADERS_BASE, ...mr.map((r) => rowToBase(r, annotations[r.invoiceNumber]))];
@@ -83,6 +89,7 @@ export default function ExportButton({
       XLSX.utils.book_append_sheet(wb, ws, m);
     }
 
+    // Per-month date-stamped (with annotations)
     const today = new Date();
     for (const m of months) {
       const mr = rows.filter((r) => r.invoiceMonth === m);
@@ -95,6 +102,7 @@ export default function ExportButton({
       XLSX.utils.book_append_sheet(wb, ws, `${m.slice(0, 8)} ${ordinal(today.getDate())} ${today.getFullYear()}`.slice(0, 31));
     }
 
+    // Multi-month
     const multiRows = rows.filter((r) => multiMonthSet.has(r.entityId || r.customerId));
     const multiData = [
       [...HEADERS_BASE, ...HEADERS_EXTRA],
@@ -108,7 +116,7 @@ export default function ExportButton({
   }
 
   return (
-    <button onClick={onExport} className="btn-zoca">
+    <button onClick={onExport} className="btn-ghost">
       <Download size={14} />
       Export Excel
     </button>

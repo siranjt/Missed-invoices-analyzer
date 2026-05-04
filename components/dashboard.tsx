@@ -8,8 +8,8 @@ import InvoicesTable from "./invoices-table";
 import ExportButton from "./export-button";
 import { RefreshCw } from "lucide-react";
 
-type Tab = "All" | "May" | "April" | "March" | "February";
-const TABS: Tab[] = ["All", "May", "April", "March", "February"];
+type Tab = "All" | "May" | "April" | "March";
+const TABS: Tab[] = ["All", "May", "April", "March"];
 
 export default function Dashboard() {
   const [rows, setRows] = useState<InvoiceRow[]>([]);
@@ -35,24 +35,17 @@ export default function Dashboard() {
     try {
       const r = await fetch(`/api/invoices${refresh ? "?refresh=1" : ""}`);
       if (!r.ok) {
-        // Try to read a JSON error body if present, else fall through.
         let errMsg = `HTTP ${r.status}`;
         try {
           const txt = await r.text();
-          try {
-            const j = JSON.parse(txt);
-            errMsg = j?.error || errMsg;
-          } catch {
-            errMsg = txt.slice(0, 200) || errMsg;
-          }
+          try { const j = JSON.parse(txt); errMsg = j?.error || errMsg; }
+          catch { errMsg = txt.slice(0, 200) || errMsg; }
         } catch {}
         throw new Error(errMsg);
       }
 
       const ct = r.headers.get("content-type") || "";
 
-      // NDJSON stream path (newline-delimited JSON, one event per line).
-      // Server emits { type: "partial", rows } then { type: "complete", rows, fetchedAt }.
       if (ct.includes("ndjson") || ct.includes("text/plain")) {
         if (!r.body) throw new Error("Empty response body");
         const reader = r.body.getReader();
@@ -64,21 +57,11 @@ export default function Dashboard() {
           const trimmed = line.trim();
           if (!trimmed) return;
           let msg: any;
-          try {
-            msg = JSON.parse(trimmed);
-          } catch {
-            return;
-          }
-          if (msg.type === "error") {
-            throw new Error(msg.error || "Server error");
-          }
+          try { msg = JSON.parse(trimmed); } catch { return; }
+          if (msg.type === "error") throw new Error(msg.error || "Server error");
           if (msg.type === "partial" || msg.type === "complete") {
-            if (Array.isArray(msg.rows)) {
-              setRows(msg.rows);
-              gotAnyRows = true;
-            }
+            if (Array.isArray(msg.rows)) { setRows(msg.rows); gotAnyRows = true; }
             if (msg.fetchedAt) setFetchedAt(msg.fetchedAt);
-            // First payload (usually partial) is enough to hide skeleton.
             setLoading(false);
           }
         };
@@ -94,14 +77,9 @@ export default function Dashboard() {
             handleLine(line);
           }
         }
-        // Flush any trailing partial line.
         if (buffer.trim()) handleLine(buffer);
-
-        if (!gotAnyRows) {
-          throw new Error("Stream ended with no rows");
-        }
+        if (!gotAnyRows) throw new Error("Stream ended with no rows");
       } else {
-        // Legacy single-JSON-object path.
         const data = await r.json();
         if (data?.error) throw new Error(data.error);
         setRows(data.rows || []);
@@ -168,12 +146,11 @@ export default function Dashboard() {
   }, [tabFiltered, filters, multiMonthSet]);
 
   const tabCounts = useMemo(() => {
-    const m: Record<Tab, number> = { All: rows.length, May: 0, April: 0, March: 0, February: 0 };
+    const m: Record<Tab, number> = { All: rows.length, May: 0, April: 0, March: 0 };
     for (const r of rows) {
       if (r.invoiceMonth === "May") m.May++;
       else if (r.invoiceMonth === "April") m.April++;
       else if (r.invoiceMonth === "March") m.March++;
-      else if (r.invoiceMonth === "February") m.February++;
     }
     return m;
   }, [rows]);
@@ -192,40 +169,86 @@ export default function Dashboard() {
     } catch {}
   }
 
+  const lastFetchLabel = fetchedAt
+    ? new Date(fetchedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })
+    : null;
+
   return (
-    <div className="space-y-6">
-      <header className="flex items-center justify-between flex-wrap gap-3">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="inline-block w-2 h-2 rounded-full bg-zoca-pink shadow-[0_0_8px_rgba(255,168,205,0.6)]" />
-            <span className="text-[11px] uppercase tracking-[0.2em] text-zoca-pink font-semibold">Zoca · Finance</span>
-          </div>
-          <h1 className="display text-3xl font-bold">Missed Invoice Tracker</h1>
-          <p className="text-xs text-zoca-textMuted mt-1">
-            Live Chargebee + Metabase
-            {fetchedAt ? ` · last fetch ${new Date(fetchedAt).toLocaleString()}` : ""}
-          </p>
+    <div className="space-y-5">
+      {/* Top wordmark */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2.5">
+          <span
+            className="inline-flex items-center justify-center w-8 h-8 rounded-lg display font-extrabold text-zoca-purpleDark"
+            style={{ background: "linear-gradient(135deg, #ffa8cd, #ff8eb8)", fontSize: 16 }}
+          >Z</span>
+          <span className="text-sm font-semibold tracking-wider">ZOCA</span>
+          <span className="text-zoca-strokeStrong">·</span>
+          <span className="text-sm text-zoca-textMuted">Missed Invoice Tracker</span>
         </div>
-        <div className="flex gap-2">
-          <button
-            onClick={() => loadInvoices(true)}
-            disabled={refreshing}
-            className="btn-ghost"
-          >
-            <RefreshCw size={14} className={refreshing ? "animate-spin" : ""} />
-            Refresh
-          </button>
-          <ExportButton rows={filtered} annotations={annotations} multiMonthSet={multiMonthSet} />
+        <div className="flex items-center gap-3 text-xs text-zoca-textMuted">
+          <span className="flex items-center gap-1.5">
+            <span className="live-dot inline-block w-1.5 h-1.5 rounded-full" style={{ background: "#8de0a3", boxShadow: "0 0 6px #8de0a3" }} />
+            Live data
+          </span>
+          <span className="opacity-40">·</span>
+          <span>Chargebee + Metabase + Linear</span>
         </div>
-      </header>
+      </div>
+
+      {/* Hero */}
+      <div className="text-center pt-10 pb-6">
+        <div
+          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[12px] mb-5"
+          style={{ background: "rgba(31,22,69,0.6)", border: "1px solid #3d2c7d", color: "#c4b5e8", backdropFilter: "blur(10px)" }}
+        >
+          <span className="live-dot inline-block w-1.5 h-1.5 rounded-full" style={{ background: "#8de0a3", boxShadow: "0 0 6px #8de0a3" }} />
+          Finance ops · refresh on demand
+        </div>
+        <h1 className="display font-extrabold leading-none mb-4" style={{ fontSize: 60, letterSpacing: "-0.025em" }}>
+          Missed Invoice <span className="gradient-title">Tracker</span>
+          <span className="sparkle ml-1.5 align-top text-zoca-pink" style={{ fontSize: 28 }}>✦</span>
+        </h1>
+        <p className="text-base text-zoca-textMuted max-w-[640px] mx-auto leading-relaxed mb-5">
+          Unpaid Chargebee invoices, enriched with AM ownership and live Linear ticket
+          matching — so the team always knows who owes what and who's already on it.
+        </p>
+        <div className="flex justify-center gap-7 text-xs text-zoca-textMuted">
+          <span className="flex items-center gap-1.5"><span className="text-zoca-pink">✱</span>Live</span>
+          <span className="flex items-center gap-1.5"><span style={{ color: "#7868f4" }}>✱</span>Streaming pipeline</span>
+          <span className="flex items-center gap-1.5"><span style={{ color: "#8de0a3" }}>✱</span>Persisted annotations</span>
+        </div>
+      </div>
 
       {error && (
-        <div className="card-zoca text-sm" style={{ background: "#3a142a", borderColor: "#7d2052", color: "#ffd6e7" }}>
+        <div className="card-zoca text-sm" style={{ background: "rgba(58,20,42,0.6)", borderColor: "#7d2052", color: "#ffd6e7" }}>
           {error}
         </div>
       )}
 
-      <div role="tablist" className="card-zoca !p-1.5 inline-flex gap-1 flex-wrap w-fit">
+      <Filters value={filters} onChange={setFilters} rows={rows} />
+
+      {/* Status row */}
+      <div className="flex items-center justify-between flex-wrap gap-3 px-1">
+        <div className="text-[11px] uppercase tracking-[0.12em] text-zoca-textMuted">
+          Showing <span className="text-emerald-300 font-bold">{filtered.length}</span> / {rows.length}
+          {lastFetchLabel && (<> · Last refresh <span className="text-zoca-text font-semibold">{lastFetchLabel}</span></>)}
+        </div>
+        <div className="flex gap-2">
+          <ExportButton rows={filtered} annotations={annotations} multiMonthSet={multiMonthSet} />
+          <button
+            onClick={() => loadInvoices(true)}
+            disabled={refreshing}
+            className="btn-zoca"
+          >
+            <RefreshCw size={14} className={refreshing ? "animate-spin" : ""} />
+            Refresh live data
+          </button>
+        </div>
+      </div>
+
+      {/* Tabs */}
+      <div role="tablist" className="card-zoca !rounded-full !p-1.5 inline-flex gap-1 flex-wrap w-fit">
         {TABS.map((t) => (
           <button
             key={t}
@@ -239,9 +262,8 @@ export default function Dashboard() {
         ))}
       </div>
 
-      <KpiCards rows={filtered} multiMonthSet={multiMonthSet} />
+      <KpiCards rows={filtered} multiMonthSet={multiMonthSet} annotations={annotations} />
       <Charts rows={filtered} />
-      <Filters value={filters} onChange={setFilters} rows={rows} />
       <InvoicesTable
         rows={filtered}
         annotations={annotations}
