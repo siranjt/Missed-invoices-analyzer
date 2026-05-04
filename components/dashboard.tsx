@@ -1,124 +1,41 @@
 "use client";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 import type { InvoiceRow, AnnotationsMap } from "@/lib/types";
-import Hero from "./hero";
-import MemberChips from "./member-chips";
-import HeroMetric from "./hero-metric";
-import KpiSparklineGrid from "./kpi-sparkline-grid";
+import KpiCards from "./kpi-cards";
 import Charts from "./charts";
 import Filters, { type FilterState } from "./filters";
 import InvoicesTable from "./invoices-table";
 import ExportButton from "./export-button";
-import UserMenu from "./user-menu";
-import ZocaLogo from "./zoca-logo";
-import {
-  KpiCardsSkeleton,
-  ChartsSkeleton,
-  FiltersSkeleton,
-  InvoicesTableSkeleton
-} from "./skeletons";
-import { RefreshCw, X } from "lucide-react";
+import { RefreshCw } from "lucide-react";
 
-type Tab = "All" | "April" | "March" | "February";
-const TABS: Tab[] = ["All", "April", "March", "February"];
-
-function parseTab(v: string | null): Tab {
-  return v === "April" || v === "March" || v === "February" ? v : "All";
-}
-
-function parseFilters(sp: URLSearchParams): FilterState {
-  return {
-    q: sp.get("q") || "",
-    am: sp.get("am") || "",
-    status: sp.get("status") || "",
-    month: sp.get("month") || "",
-    ach: sp.get("ach") || "",
-    autoDebit: sp.get("autoDebit") || "",
-    multiOnly: sp.get("multiOnly") === "1"
-  };
-}
-
-function buildSearchString(tab: Tab, filters: FilterState): string {
-  const sp = new URLSearchParams();
-  if (tab !== "All") sp.set("tab", tab);
-  if (filters.q) sp.set("q", filters.q);
-  if (filters.am) sp.set("am", filters.am);
-  if (filters.status) sp.set("status", filters.status);
-  if (filters.month) sp.set("month", filters.month);
-  if (filters.ach) sp.set("ach", filters.ach);
-  if (filters.autoDebit) sp.set("autoDebit", filters.autoDebit);
-  if (filters.multiOnly) sp.set("multiOnly", "1");
-  const s = sp.toString();
-  return s ? `?${s}` : "";
-}
+type Tab = "All" | "May" | "April" | "March" | "February";
+const TABS: Tab[] = ["All", "May", "April", "March", "February"];
 
 export default function Dashboard() {
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-
   const [rows, setRows] = useState<InvoiceRow[]>([]);
   const [annotations, setAnnotations] = useState<AnnotationsMap>({});
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [fetchedAt, setFetchedAt] = useState<string | null>(null);
-
-  // Initial state hydrated from the URL so shared/bookmarked links open with
-  // the same view. After mount, state changes flow back into the URL.
-  const [activeTab, setActiveTab] = useState<Tab>(() =>
-    parseTab(searchParams.get("tab"))
-  );
-  const [filters, setFilters] = useState<FilterState>(() => parseFilters(searchParams));
+  const [activeTab, setActiveTab] = useState<Tab>("All");
+  const [filters, setFilters] = useState<FilterState>({
+    q: "",
+    am: "",
+    status: "",
+    month: "",
+    ach: "",
+    autoDebit: "",
+    multiOnly: false
+  });
 
   async function loadInvoices(refresh = false) {
     if (refresh) setRefreshing(true); else setLoading(true);
     setError(null);
     try {
       const r = await fetch(`/api/invoices${refresh ? "?refresh=1" : ""}`);
-      if (!r.ok) {
-        const txt = await r.text();
-        throw new Error(txt || `Failed to load invoices (${r.status})`);
-      }
-      const ct = r.headers.get("content-type") || "";
-
-      // Streaming NDJSON: progressive partial → complete.
-      if (ct.includes("ndjson") && r.body) {
-        const reader = r.body.getReader();
-        const decoder = new TextDecoder();
-        let buf = "";
-        let gotAny = false;
-        while (true) {
-          const { value, done } = await reader.read();
-          if (done) break;
-          buf += decoder.decode(value, { stream: true });
-          const lines = buf.split("\n");
-          buf = lines.pop() ?? "";
-          for (const raw of lines) {
-            const line = raw.trim();
-            if (!line) continue;
-            let msg: any;
-            try { msg = JSON.parse(line); } catch { continue; }
-            if (msg.type === "partial" || msg.type === "complete") {
-              setRows(msg.rows || []);
-              if (msg.fetchedAt) setFetchedAt(msg.fetchedAt);
-              gotAny = true;
-              if (msg.type === "partial") {
-                // We have something on screen now — stop the skeleton.
-                setLoading(false);
-              }
-            } else if (msg.type === "error") {
-              throw new Error(msg.error || "Stream error");
-            }
-          }
-        }
-        if (!gotAny) throw new Error("Empty response from /api/invoices");
-        return;
-      }
-
-      // Fallback: plain JSON (e.g. unexpected proxy transformation).
       const data = await r.json();
+      if (!r.ok) throw new Error(data?.error || "Failed to load invoices");
       setRows(data.rows || []);
       setFetchedAt(data.fetchedAt || null);
     } catch (e: any) {
@@ -142,25 +59,6 @@ export default function Dashboard() {
     loadAnnotations();
   }, []);
 
-  // Sync state → URL (replace, don't push, so we don't pollute history).
-  const lastSearchRef = useRef<string>("");
-  useEffect(() => {
-    const next = buildSearchString(activeTab, filters);
-    if (next === lastSearchRef.current) return;
-    lastSearchRef.current = next;
-    router.replace(`${pathname}${next}`, { scroll: false });
-  }, [activeTab, filters, pathname, router]);
-
-  // Sync URL → state on browser back/forward (popstate). The router doesn't
-  // re-fire useState initializers, so we reconcile manually.
-  useEffect(() => {
-    const fromUrl = searchParams.toString();
-    if (fromUrl === lastSearchRef.current.replace(/^\?/, "")) return;
-    setActiveTab(parseTab(searchParams.get("tab")));
-    setFilters(parseFilters(searchParams));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams]);
-
   const multiMonthSet = useMemo(() => {
     const m = new Map<string, Set<string>>();
     for (const r of rows) {
@@ -174,7 +72,6 @@ export default function Dashboard() {
     return out;
   }, [rows]);
 
-  // Apply tab month filter first, then user filters
   const tabFiltered = useMemo(() => {
     if (activeTab === "All") return rows;
     return rows.filter((r) => r.invoiceMonth === activeTab);
@@ -201,59 +98,16 @@ export default function Dashboard() {
     });
   }, [tabFiltered, filters, multiMonthSet]);
 
-  // Show skeletons only on the first paint, when we have no data at all yet.
-  // Subsequent refreshes keep the existing UI and rely on the Refresh-button
-  // spinner for feedback.
-  const firstLoad = loading && rows.length === 0;
-
   const tabCounts = useMemo(() => {
-    const m: Record<Tab, number> = { All: rows.length, April: 0, March: 0, February: 0 };
+    const m: Record<Tab, number> = { All: rows.length, May: 0, April: 0, March: 0, February: 0 };
     for (const r of rows) {
-      if (r.invoiceMonth === "April") m.April++;
+      if (r.invoiceMonth === "May") m.May++;
+      else if (r.invoiceMonth === "April") m.April++;
       else if (r.invoiceMonth === "March") m.March++;
       else if (r.invoiceMonth === "February") m.February++;
     }
     return m;
   }, [rows]);
-
-  // Drill-down: click an AM (in chart or table) to filter to that AM and
-  // scroll the table into view.
-  const tableRef = useRef<HTMLDivElement>(null);
-  function handleAmClick(amName: string) {
-    setFilters((f) => ({ ...f, am: amName }));
-    requestAnimationFrame(() => {
-      tableRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-    });
-  }
-
-  /** Generic filter-patch applier. Used by KPI cards and chart slices to
-   *  drill into the table from anywhere on the dashboard. Toggles off if
-   *  the patch matches the current filter (so clicking the same KPI twice
-   *  clears it). */
-  function applyFilter(patch: Partial<FilterState>) {
-    setFilters((f) => {
-      const next = { ...f };
-      let allMatch = true;
-      for (const k in patch) {
-        const key = k as keyof FilterState;
-        if ((next[key] as any) !== (patch[key] as any)) allMatch = false;
-      }
-      // Toggle: clicking again clears just the keys in the patch.
-      if (allMatch) {
-        for (const k in patch) {
-          const key = k as keyof FilterState;
-          if (typeof patch[key] === "boolean") (next as any)[key] = false;
-          else (next as any)[key] = "";
-        }
-      } else {
-        Object.assign(next, patch);
-      }
-      return next;
-    });
-    requestAnimationFrame(() => {
-      tableRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-    });
-  }
 
   async function saveAnnotation(invoiceNumber: string, patch: any) {
     setAnnotations((prev) => ({
@@ -270,84 +124,39 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="space-y-10">
-      {/* Top wordmark band — actual Zoca logo SVG */}
-      <div className="flex items-center justify-between text-[12px] text-zoca-textMuted">
-        <div className="flex items-center gap-3">
-          <ZocaLogo height={22} fill="#f5f0ff" />
-          <span className="text-zoca-textDim">·  Missed invoice tracker</span>
+    <div className="space-y-6">
+      <header className="flex items-center justify-between flex-wrap gap-3">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <span className="inline-block w-2 h-2 rounded-full bg-zoca-pink shadow-[0_0_8px_rgba(255,168,205,0.6)]" />
+            <span className="text-[11px] uppercase tracking-[0.2em] text-zoca-pink font-semibold">Zoca · Finance</span>
+          </div>
+          <h1 className="display text-3xl font-bold">Missed Invoice Tracker</h1>
+          <p className="text-xs text-zoca-textMuted mt-1">
+            Live Chargebee + Metabase
+            {fetchedAt ? ` · last fetch ${new Date(fetchedAt).toLocaleString()}` : ""}
+          </p>
         </div>
-        <div className="flex items-center gap-4">
-          <span className="hidden sm:inline">Finance team</span>
-          <span className="text-zoca-textDim">·</span>
-          <span className="hidden sm:inline">Live Chargebee + Metabase</span>
-          <UserMenu />
+        <div className="flex gap-2">
+          <button
+            onClick={() => loadInvoices(true)}
+            disabled={refreshing}
+            className="btn-ghost"
+          >
+            <RefreshCw size={14} className={refreshing ? "animate-spin" : ""} />
+            Refresh
+          </button>
+          <ExportButton rows={filtered} annotations={annotations} multiMonthSet={multiMonthSet} />
         </div>
-      </div>
-
-      {/* Editorial hero */}
-      <Hero rows={rows} />
-
-      {/* Window selector pill */}
-      <div className="flex items-center justify-center">
-        <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-zoca-surface border border-zoca-border">
-          <span className="text-[10px] tracking-[0.18em] text-zoca-textMuted uppercase font-medium">
-            Window
-          </span>
-          <span className="text-[12px] font-semibold text-zoca-text">
-            {activeTab === "All" ? "All open invoices" : activeTab}
-          </span>
-          <span className="text-zoca-textDim text-[10px]">▾</span>
-        </div>
-      </div>
-
-      {/* Member chips */}
-      {!firstLoad && (
-        <MemberChips
-          rows={rows}
-          activeAm={filters.am}
-          onSelect={(am) => {
-            setFilters((f) => ({ ...f, am }));
-            if (am) {
-              requestAnimationFrame(() =>
-                tableRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
-              );
-            }
-          }}
-        />
-      )}
-
-      {/* Action buttons (right-aligned) */}
-      <div className="flex items-center justify-end gap-2">
-        <button
-          onClick={() => loadInvoices(true)}
-          disabled={refreshing}
-          className="btn-ghost"
-        >
-          <RefreshCw size={13} className={refreshing ? "animate-spin" : ""} />
-          Refresh
-        </button>
-        <ExportButton rows={filtered} annotations={annotations} multiMonthSet={multiMonthSet} />
-      </div>
+      </header>
 
       {error && (
-        <div
-          className="card-zoca text-[12px]"
-          style={{
-            background: "rgba(248,113,113,0.08)",
-            borderColor: "rgba(248,113,113,0.30)",
-            color: "#fca5a5"
-          }}
-        >
+        <div className="card-zoca text-sm" style={{ background: "#3a142a", borderColor: "#7d2052", color: "#ffd6e7" }}>
           {error}
         </div>
       )}
 
-      {/* Wide rounded tab bar */}
-      <div
-        role="tablist"
-        className="flex items-center gap-1 flex-wrap p-1.5 rounded-full bg-zoca-surface/70 border border-zoca-border"
-      >
+      <div role="tablist" className="card-zoca !p-1.5 inline-flex gap-1 flex-wrap w-fit">
         {TABS.map((t) => (
           <button
             key={t}
@@ -356,81 +165,21 @@ export default function Dashboard() {
             onClick={() => setActiveTab(t)}
             className="tab-pill"
           >
-            {t}
-            <span className="opacity-70 text-[11px] tabnum">{tabCounts[t]}</span>
+            {t} <span className="opacity-70 ml-1 text-[11px]">({tabCounts[t]})</span>
           </button>
         ))}
-        <div className="ml-auto text-[11px] text-zoca-textDim pr-3">
-          {filtered.length.toLocaleString()} / {rows.length.toLocaleString()} ·{" "}
-          {fetchedAt ? new Date(fetchedAt).toLocaleTimeString() : "—"}
-        </div>
       </div>
 
-      {firstLoad ? (
-        <>
-          <KpiCardsSkeleton />
-          <ChartsSkeleton />
-          <FiltersSkeleton />
-          <InvoicesTableSkeleton />
-        </>
-      ) : (
-        <>
-          {/* Hero metric card */}
-          <HeroMetric rows={filtered} multiMonthSet={multiMonthSet} />
-
-          {/* Sparkline KPI grid — clickable, each tile drills into the table */}
-          <KpiSparklineGrid
-            rows={filtered}
-            multiMonthSet={multiMonthSet}
-            onCardClick={applyFilter}
-          />
-
-          {/* Charts grid — every bar / slice is clickable */}
-          <Charts
-            rows={filtered}
-            onAmClick={handleAmClick}
-            onFilterClick={applyFilter}
-            onMonthClick={(m) => {
-              if (m === "April" || m === "March" || m === "February") setActiveTab(m);
-            }}
-          />
-
-          {/* Existing filters bar (kept) */}
-          <Filters value={filters} onChange={setFilters} rows={rows} />
-
-          {filters.am && (
-            <div className="flex items-center gap-2 text-[11px]">
-              <span className="text-zoca-textMuted">Drilled into AM:</span>
-              <span
-                className="pill"
-                style={{ background: "rgba(120,104,244,0.16)", color: "#c4b5e8" }}
-              >
-                {filters.am}
-              </span>
-              <button
-                type="button"
-                onClick={() => setFilters((f) => ({ ...f, am: "" }))}
-                className="inline-flex items-center gap-1 text-zoca-textMuted hover:text-zoca-text transition-colors"
-              >
-                <X size={11} />
-                Clear
-              </button>
-            </div>
-          )}
-
-          {/* Existing 21-column table (kept) */}
-          <div ref={tableRef}>
-            <InvoicesTable
-              rows={filtered}
-              annotations={annotations}
-              onSave={saveAnnotation}
-              loading={loading}
-              multiMonthSet={multiMonthSet}
-              onAmClick={handleAmClick}
-            />
-          </div>
-        </>
-      )}
+      <KpiCards rows={filtered} multiMonthSet={multiMonthSet} />
+      <Charts rows={filtered} />
+      <Filters value={filters} onChange={setFilters} rows={rows} />
+      <InvoicesTable
+        rows={filtered}
+        annotations={annotations}
+        onSave={saveAnnotation}
+        loading={loading}
+        multiMonthSet={multiMonthSet}
+      />
     </div>
   );
 }
