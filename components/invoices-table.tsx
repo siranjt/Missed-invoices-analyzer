@@ -184,7 +184,30 @@ export default function InvoicesTable({
                 </td>
                 <td><EditableText value={a.comments || ""} onSave={(v) => onSave(r.invoiceNumber, { comments: v })} /></td>
                 <td><EditableText value={a.oldComments || ""} onSave={(v) => onSave(r.invoiceNumber, { oldComments: v })} /></td>
-                <td><EditableText value={a.tickets || ""} onSave={(v) => onSave(r.invoiceNumber, { tickets: v })} /></td>
+                <td>
+                  {r.latestTicket ? (
+                    <a
+                      href={r.latestTicket.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title={r.latestTicket.title}
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-mono font-semibold border transition-colors"
+                      style={{
+                        background: "rgba(255,168,205,0.12)",
+                        color: "#ffa8cd",
+                        borderColor: "rgba(255,168,205,0.35)"
+                      }}
+                    >
+                      {r.latestTicket.id}
+                      <span style={{ opacity: 0.6 }}>↗</span>
+                    </a>
+                  ) : (
+                    <EditableText
+                      value={a.tickets || ""}
+                      onSave={(v) => onSave(r.invoiceNumber, { tickets: v })}
+                    />
+                  )}
+                </td>
               </tr>
             );
           })}
