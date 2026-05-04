@@ -23,25 +23,25 @@ function fmt(n: number) { return "$" + Math.round(n).toLocaleString(); }
 function StatusPill({ s }: { s: string }) {
   const style: React.CSSProperties =
     s === "payment_due"
-      ? { background: "rgba(255,168,205,0.18)", color: "#ffa8cd", border: "1px solid rgba(255,168,205,0.3)" }
-      : { background: "rgba(231,82,116,0.18)", color: "#ff7593", border: "1px solid rgba(255,117,147,0.3)" };
+      ? { background: "#fef3c7", color: "#b45309" }
+      : { background: "#fee2e2", color: "#b91c1c" };
   return <span className="pill" style={style}>{s}</span>;
 }
 
 function AchPill({ s }: { s: string }) {
   if (!s) return null;
-  return <span className="pill" style={{ background: "rgba(120,104,244,0.2)", color: "#9b8df0", border: "1px solid rgba(120,104,244,0.35)" }}>{s}</span>;
+  return <span className="pill" style={{ background: "#eef2ff", color: "#4338ca" }}>{s}</span>;
 }
 
 function callerStyle(v: string): React.CSSProperties {
-  if (v === "Shakthi") return { background: "rgba(255,117,147,0.15)", color: "#ff7593", borderColor: "rgba(255,117,147,0.4)" };
-  if (v === "Joshi") return { background: "rgba(120,200,140,0.15)", color: "#8de0a3", borderColor: "rgba(120,200,140,0.4)" };
+  if (v === "Shakthi") return { background: "#fce7f3", color: "#be185d" };
+  if (v === "Joshi") return { background: "#dcfce7", color: "#166534" };
   return {};
 }
 function connStyle(v: string): React.CSSProperties {
-  if (v === "Connected") return { background: "rgba(120,200,140,0.15)", color: "#8de0a3", borderColor: "rgba(120,200,140,0.4)" };
-  if (v === "VM") return { background: "rgba(120,104,244,0.18)", color: "#9b8df0", borderColor: "rgba(120,104,244,0.4)" };
-  if (v === "Not connected") return { background: "rgba(255,117,147,0.15)", color: "#ff7593", borderColor: "rgba(255,117,147,0.4)" };
+  if (v === "Connected") return { background: "#dcfce7", color: "#166534" };
+  if (v === "VM") return { background: "#dbeafe", color: "#1e40af" };
+  if (v === "Not connected") return { background: "#fee2e2", color: "#b91c1c" };
   return {};
 }
 
@@ -49,7 +49,7 @@ function EditableText({ value, onSave }: { value: string; onSave: (v: string) =>
   const [v, setV] = useState(value || "");
   return (
     <input
-      className="w-full min-w-[140px] h-7 px-2 text-xs border border-zoca-stroke rounded-md bg-zoca-surface text-zoca-text focus:ring-1 focus:ring-zoca-pink/30 focus:border-zoca-pink focus:outline-none transition-colors"
+      className="w-full min-w-[140px] h-7 px-2 text-xs border border-zoca-stroke rounded-md bg-white text-zoca-text focus:ring-2 focus:ring-blue-100 focus:border-zoca-blue focus:outline-none transition-colors"
       value={v}
       onChange={(e) => setV(e.target.value)}
       onBlur={() => v !== value && onSave(v)}
@@ -63,13 +63,13 @@ function EditableSelect({
 }: { value: string; options: string[]; onSave: (v: string) => void; styleFn?: (v: string) => React.CSSProperties }) {
   return (
     <select
-      className="h-7 text-xs border border-zoca-stroke rounded-md bg-zoca-surface text-zoca-text focus:ring-1 focus:ring-zoca-pink/30 focus:outline-none px-1 font-medium transition-colors"
+      className="h-7 text-xs border border-zoca-stroke rounded-md bg-white text-zoca-text focus:ring-2 focus:ring-blue-100 focus:outline-none px-1 font-medium transition-colors"
       style={styleFn?.(value) || {}}
       value={value || ""}
       onChange={(e) => onSave(e.target.value)}
     >
-      <option value="" style={{ background: "#0f0825", color: "#a89cc6" }}>—</option>
-      {options.map((o) => <option key={o} value={o} style={{ background: "#0f0825", color: "#f5f0ff" }}>{o}</option>)}
+      <option value="" style={{ background: "#fff", color: "#94a3b8" }}>—</option>
+      {options.map((o) => <option key={o} value={o} style={{ background: "#fff", color: "#0f172a" }}>{o}</option>)}
     </select>
   );
 }
@@ -108,7 +108,7 @@ export default function InvoicesTable({
   }
 
   return (
-    <div className="overflow-x-auto card-zoca !p-0">
+    <div className="overflow-x-auto surface !p-0">
       <table className="zoca-tbl w-full" style={{ minWidth: 1900 }}>
         <thead>
           <tr>
@@ -149,11 +149,11 @@ export default function InvoicesTable({
               <tr key={r.invoiceNumber} className={isMulti ? "multi-month" : ""}>
                 <td className="font-mono text-[11px] text-zoca-textMuted">{r.customerId}</td>
                 <td className="font-mono text-[11px] text-zoca-textMuted">{r.entityId}</td>
-                <td className="font-medium text-zoca-text">{r.bizName}</td>
+                <td className="font-semibold text-zoca-text">{r.bizName}</td>
                 <td>{r.amName}</td>
                 <td>{r.subscriptionStatus}</td>
                 <td>{r.cancellingAt}</td>
-                <td className="font-mono text-[11px] text-zoca-pink">{r.invoiceNumber}</td>
+                <td className="font-mono text-[11px] text-zoca-blueDeep">{r.invoiceNumber}</td>
                 <td><AchPill s={r.achStatus} /></td>
                 <td>{r.autoDebit}</td>
                 <td><EditableText value={a.amComment || ""} onSave={(v) => onSave(r.invoiceNumber, { amComment: v })} /></td>
@@ -191,28 +191,18 @@ export default function InvoicesTable({
                       target="_blank"
                       rel="noopener noreferrer"
                       title={r.latestTicket.title}
-                      className="block max-w-[260px] group"
+                      className="ticket-link block max-w-[260px]"
                     >
                       <span
-                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-mono font-semibold border transition-colors"
-                        style={{
-                          background: "rgba(255,168,205,0.12)",
-                          color: "#ffa8cd",
-                          borderColor: "rgba(255,168,205,0.35)"
-                        }}
+                        className="ticket-badge inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-mono font-semibold transition-colors"
+                        style={{ background: "#fdf2f8", color: "#be185d" }}
                       >
                         {r.latestTicket.id}
-                        <span style={{ opacity: 0.6 }}>↗</span>
+                        <span style={{ opacity: 0.7 }}>↗</span>
                       </span>
                       <div
-                        className="text-[11px] text-zoca-textMuted mt-1 leading-tight group-hover:text-zoca-text transition-colors"
-                        style={{
-                          display: "-webkit-box",
-                          WebkitLineClamp: 2,
-                          WebkitBoxOrient: "vertical",
-                          overflow: "hidden",
-                          wordBreak: "break-word"
-                        }}
+                        className="ticket-title text-[11px] text-zoca-textMuted mt-1 leading-tight transition-colors"
+                        style={{ display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden", wordBreak: "break-word" }}
                       >
                         {r.latestTicket.title}
                       </div>

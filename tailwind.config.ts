@@ -5,53 +5,40 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Zoca twilight-slate — medium-dark slate-purple. Easier on the eyes
-        // than pure black for long sessions; brand colors still pop. Montserrat
-        // across the board.
         zoca: {
-          // Canvas + surfaces
-          canvas: "#1f1a2e",         // page background — slate-purple
-          surface: "#2d2841",         // card / table fill
-          surfaceHover: "#353050",    // row hover
-          thead: "#262134",           // table header (slightly darker than card)
-          searchBg: "#1a162a",        // input background
-          trackBg: "#3d3658",         // chart bar/donut tracks
-
-          // Borders
-          border: "#3d3658",
-          borderStrong: "#5a4f7a",
-
+          // Primary blue/purple/pink gradient ramp
+          blue: "#3b82f6",
+          blueDeep: "#2563eb",
+          indigo: "#6366f1",
+          purple: "#8b5cf6",
+          pink: "#ec4899",
+          pinkDeep: "#be185d",
+          // Surfaces
+          bg: "#ffffff",
+          surface: "#ffffff",
+          surfaceMuted: "#f8fafc",
+          stroke: "#e6e8ee",
+          strokeStrong: "#cbd5e1",
           // Text
-          text: "#f5f0ff",            // primary
-          textSecondary: "#cfc4ee",
-          textMuted: "#b3a7ce",
-          textDim: "#7d6f9d",
-
-          // Brand accents (sourced from zoca.com)
-          pink: "#ffa8cd",
-          pinkHover: "#f695be",
-          pinkInk: "#1a0e2e",         // text on pink button
-          purple: "#7868f4",
-          purpleDeep: "#1f0843",
-          lavender: "#c4b5e8",
-          blue: "#4d65ff",            // zoca.com focus state blue
-
+          text: "#0f172a",
+          textMuted: "#64748b",
+          textDim: "#94a3b8",
           // Semantic
-          green: "#4ade80",
-          red: "#f87171",
-          amber: "#facc15",
-          orange: "#fb923c",
-          cyan: "#22d3ee"
+          success: "#10b981",
+          warning: "#f59e0b",
+          danger: "#ef4444"
         }
       },
       fontFamily: {
-        // Montserrat across the board, matching zoca.com.
-        sans: ["var(--font-montserrat)", "Montserrat", "ui-sans-serif", "system-ui", "sans-serif"],
-        display: ["var(--font-montserrat)", "Montserrat", "ui-sans-serif", "system-ui", "sans-serif"],
-        mono: ["var(--font-mono)", "JetBrains Mono", "ui-monospace", "monospace"]
+        sans: ["Inter", "ui-sans-serif", "system-ui", "sans-serif"],
+        display: ["Inter", "Arial", "sans-serif"]
       },
       borderRadius: {
-        zoca: "0.5rem"
+        zoca: "0.625rem"
+      },
+      boxShadow: {
+        zocaCard: "0 1px 3px rgba(15,23,42,0.04)",
+        zocaPop: "0 6px 18px rgba(59,130,246,0.12)"
       }
     }
   },

@@ -1,21 +1,34 @@
 "use client";
 import type { InvoiceRow, AnnotationsMap } from "@/lib/types";
 
-function fmtUsd(n: number) {
-  return "$" + Math.round(n).toLocaleString();
-}
-function fmtNum(n: number) {
-  return n.toLocaleString();
-}
+export type KpiKey = "outstanding" | "invoices" | "ach" | "multi" | "tickets" | "annotations";
+
+function fmtUsd(n: number) { return "$" + Math.round(n).toLocaleString(); }
+function fmtNum(n: number) { return n.toLocaleString(); }
+
+type Tile = {
+  key: KpiKey;
+  label: string;
+  value: string;
+  accent: string;
+  sub: string;
+  pillClass: string;
+  pillText: string;
+  clickable: boolean;
+};
 
 export default function KpiCards({
   rows,
   multiMonthSet,
-  annotations
+  annotations,
+  activeKpi,
+  onKpiClick
 }: {
   rows: InvoiceRow[];
   multiMonthSet: Set<string>;
   annotations?: AnnotationsMap;
+  activeKpi?: KpiKey | null;
+  onKpiClick?: (k: KpiKey) => void;
 }) {
   const outstanding = rows.reduce((s, r) => s + (r.amountDue || 0), 0);
   const customers = new Set(rows.map((r) => r.customerId)).size;
@@ -31,22 +44,37 @@ export default function KpiCards({
       }).length
     : 0;
 
-  const tiles = [
-    { label: "Outstanding", value: fmtUsd(outstanding), accent: "#ffa8cd", sub: `across ${rows.length} invoices` },
-    { label: "Invoices", value: fmtNum(rows.length), accent: "#ff8eb8", sub: `${customers} unique businesses` },
-    { label: "ACH in flight", value: fmtNum(ach), accent: "#7868f4", sub: "collection in progress" },
-    { label: "Multi-month", value: fmtNum(multi), accent: "#9b8df0", sub: "overdue ≥ 2 cycles" },
-    { label: "Tickets matched", value: fmtNum(tickets), accent: "#c4b5e8", sub: "linked Linear issues" },
-    { label: "Annotations", value: fmtNum(annotationCount), accent: "#8de0a3", sub: "notes saved by reps" }
+  const tiles: Tile[] = [
+    { key: "outstanding", label: "Outstanding", value: fmtUsd(outstanding), accent: "#0f172a", sub: `across ${rows.length} invoices`, pillClass: "pill-blue", pillText: "100% TOT", clickable: false },
+    { key: "invoices", label: "Invoices", value: fmtNum(rows.length), accent: "#ec4899", sub: `${customers} unique businesses`, pillClass: "pill-pink", pillText: `${rows.length} TOTAL`, clickable: false },
+    { key: "ach", label: "ACH in flight", value: fmtNum(ach), accent: "#6366f1", sub: "collection in progress", pillClass: "pill-blue", pillText: "CLICK TO FILTER", clickable: true },
+    { key: "multi", label: "Multi-month", value: fmtNum(multi), accent: "#f59e0b", sub: "overdue ≥ 2 cycles", pillClass: "pill-amber", pillText: "CLICK TO FILTER", clickable: true },
+    { key: "tickets", label: "Tickets matched", value: fmtNum(tickets), accent: "#a855f7", sub: "linked Linear issues", pillClass: "pill-purple", pillText: "CLICK TO FILTER", clickable: true },
+    { key: "annotations", label: "Annotations", value: fmtNum(annotationCount), accent: "#10b981", sub: "notes saved by reps", pillClass: "pill-green", pillText: "CLICK TO FILTER", clickable: true }
   ];
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2.5">
       {tiles.map((t) => (
-        <div key={t.label} className="kpi-card card-zoca">
-          <div className="text-[10px] uppercase tracking-[0.18em] text-zoca-textMuted font-bold mb-2.5">{t.label}</div>
-          <div className="display font-extrabold leading-none" style={{ color: t.accent, fontSize: 28 }}>{t.value}</div>
-          <div className="text-[11px] text-zoca-textDim mt-2">{t.sub}</div>
+        <div
+          key={t.key}
+          className={`kpi-card surface ${!t.clickable ? "!cursor-default" : ""}`}
+          data-active={t.clickable && activeKpi === t.key ? "true" : "false"}
+          onClick={() => t.clickable && onKpiClick?.(t.key)}
+          role={t.clickable ? "button" : undefined}
+          tabIndex={t.clickable ? 0 : undefined}
+          onKeyDown={(e) => {
+            if (!t.clickable) return;
+            if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onKpiClick?.(t.key); }
+          }}
+          style={{ padding: 16 }}
+        >
+          <div className="flex items-center justify-between mb-2">
+            <span className="kpi-label text-[10px] text-zoca-textMuted uppercase tracking-[0.12em] font-bold">{t.label}</span>
+            <span className={t.pillClass} style={{ fontSize: 9, padding: "2px 8px" }}>{t.pillText}</span>
+          </div>
+          <div className="display font-extrabold leading-none" style={{ color: t.accent, fontSize: 26, letterSpacing: "-0.01em" }}>{t.value}</div>
+          <div className="text-[11px] text-zoca-textDim mt-1.5">{t.sub}</div>
         </div>
       ))}
     </div>

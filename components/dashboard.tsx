@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
 import type { InvoiceRow, AnnotationsMap } from "@/lib/types";
-import KpiCards from "./kpi-cards";
+import KpiCards, { type KpiKey } from "./kpi-cards";
 import Charts from "./charts";
 import Filters, { type FilterState } from "./filters";
 import InvoicesTable from "./invoices-table";
@@ -11,6 +11,15 @@ import { RefreshCw } from "lucide-react";
 type Tab = "All" | "May" | "April" | "March";
 const TABS: Tab[] = ["All", "May", "April", "March"];
 
+const KPI_LABELS: Record<KpiKey, string> = {
+  outstanding: "All invoices",
+  invoices: "All invoices",
+  ach: "ACH In Progress",
+  multi: "Multi-month only",
+  tickets: "Has Linear ticket",
+  annotations: "Has notes"
+};
+
 export default function Dashboard() {
   const [rows, setRows] = useState<InvoiceRow[]>([]);
   const [annotations, setAnnotations] = useState<AnnotationsMap>({});
@@ -19,6 +28,7 @@ export default function Dashboard() {
   const [error, setError] = useState<string | null>(null);
   const [fetchedAt, setFetchedAt] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<Tab>("All");
+  const [activeKpi, setActiveKpi] = useState<KpiKey | null>(null);
   const [filters, setFilters] = useState<FilterState>({
     q: "",
     am: "",
@@ -124,6 +134,11 @@ export default function Dashboard() {
     return rows.filter((r) => r.invoiceMonth === activeTab);
   }, [rows, activeTab]);
 
+  const annotationHasNotes = (inv: string) => {
+    const a = annotations[inv];
+    return !!(a && (a.caller || a.connectionStatus || a.comments || a.oldComments || a.amComment));
+  };
+
   const filtered = useMemo(() => {
     const q = filters.q.trim().toLowerCase();
     return tabFiltered.filter((r) => {
@@ -141,9 +156,17 @@ export default function Dashboard() {
         const key = r.entityId || r.customerId;
         if (!multiMonthSet.has(key)) return false;
       }
+      // KPI filters
+      if (activeKpi === "ach" && r.achStatus !== "In Progress") return false;
+      if (activeKpi === "multi") {
+        const key = r.entityId || r.customerId;
+        if (!multiMonthSet.has(key)) return false;
+      }
+      if (activeKpi === "tickets" && !r.latestTicket) return false;
+      if (activeKpi === "annotations" && !annotationHasNotes(r.invoiceNumber)) return false;
       return true;
     });
-  }, [tabFiltered, filters, multiMonthSet]);
+  }, [tabFiltered, filters, multiMonthSet, activeKpi, annotations]);
 
   const tabCounts = useMemo(() => {
     const m: Record<Tab, number> = { All: rows.length, May: 0, April: 0, March: 0 };
@@ -169,59 +192,60 @@ export default function Dashboard() {
     } catch {}
   }
 
+  function onKpiClick(k: KpiKey) {
+    if (k === "outstanding" || k === "invoices") { setActiveKpi(null); return; }
+    setActiveKpi((cur) => (cur === k ? null : k));
+  }
+
   const lastFetchLabel = fetchedAt
     ? new Date(fetchedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })
     : null;
 
   return (
     <div className="space-y-5">
-      {/* Top wordmark */}
+      {/* Top bar */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2.5">
-          <span
-            className="inline-flex items-center justify-center w-8 h-8 rounded-lg display font-extrabold text-zoca-purpleDark"
-            style={{ background: "linear-gradient(135deg, #ffa8cd, #ff8eb8)", fontSize: 16 }}
-          >Z</span>
-          <span className="text-sm font-semibold tracking-wider">ZOCA</span>
-          <span className="text-zoca-strokeStrong">·</span>
-          <span className="text-sm text-zoca-textMuted">Missed Invoice Tracker</span>
-        </div>
+        <a href="/" className="block">
+          <img
+            src="https://cdn.prod.website-files.com/6862c9d69504e6490474aef3/6862c9d69504e6490474af5b_Logo.svg"
+            alt="ZOCA"
+            style={{ height: 24 }}
+            onError={(e) => {
+              const t = e.currentTarget;
+              t.style.display = "none";
+              const span = document.createElement("span");
+              span.textContent = "ZOCA";
+              span.style.fontFamily = "Inter, sans-serif";
+              span.style.fontWeight = "900";
+              span.style.fontSize = "22px";
+              span.style.letterSpacing = "-0.02em";
+              t.parentElement?.prepend(span);
+            }}
+          />
+        </a>
         <div className="flex items-center gap-3 text-xs text-zoca-textMuted">
           <span className="flex items-center gap-1.5">
-            <span className="live-dot inline-block w-1.5 h-1.5 rounded-full" style={{ background: "#8de0a3", boxShadow: "0 0 6px #8de0a3" }} />
-            Live data
+            <span className="live-dot inline-block w-1.5 h-1.5 rounded-full" style={{ background: "#10b981", boxShadow: "0 0 6px rgba(16,185,129,0.6)" }} />
+            Missed Invoice Tracker
           </span>
           <span className="opacity-40">·</span>
-          <span>Chargebee + Metabase + Linear</span>
+          <span className="text-zoca-textDim">Live</span>
         </div>
       </div>
 
       {/* Hero */}
-      <div className="text-center pt-10 pb-6">
-        <div
-          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[12px] mb-5"
-          style={{ background: "rgba(31,22,69,0.6)", border: "1px solid #3d2c7d", color: "#c4b5e8", backdropFilter: "blur(10px)" }}
-        >
-          <span className="live-dot inline-block w-1.5 h-1.5 rounded-full" style={{ background: "#8de0a3", boxShadow: "0 0 6px #8de0a3" }} />
-          Finance ops · refresh on demand
-        </div>
-        <h1 className="display font-extrabold leading-none mb-4" style={{ fontSize: 60, letterSpacing: "-0.025em" }}>
+      <div className="text-center pt-8 pb-4">
+        <span className="pill-blue mb-4 inline-block !text-[11px]">FINANCE OPS · V1</span>
+        <h1 className="display font-extrabold leading-tight mt-3" style={{ fontSize: 52, letterSpacing: "-0.025em" }}>
           Missed Invoice <span className="gradient-title">Tracker</span>
-          <span className="sparkle ml-1.5 align-top text-zoca-pink" style={{ fontSize: 28 }}>✦</span>
         </h1>
-        <p className="text-base text-zoca-textMuted max-w-[640px] mx-auto leading-relaxed mb-5">
-          Unpaid Chargebee invoices, enriched with AM ownership and live Linear ticket
-          matching — so the team always knows who owes what and who's already on it.
+        <p className="text-base text-zoca-textMuted max-w-[560px] mx-auto leading-relaxed mt-3">
+          Live Chargebee invoices, enriched with AM ownership and Linear ticket links.
         </p>
-        <div className="flex justify-center gap-7 text-xs text-zoca-textMuted">
-          <span className="flex items-center gap-1.5"><span className="text-zoca-pink">✱</span>Live</span>
-          <span className="flex items-center gap-1.5"><span style={{ color: "#7868f4" }}>✱</span>Streaming pipeline</span>
-          <span className="flex items-center gap-1.5"><span style={{ color: "#8de0a3" }}>✱</span>Persisted annotations</span>
-        </div>
       </div>
 
       {error && (
-        <div className="card-zoca text-sm" style={{ background: "rgba(58,20,42,0.6)", borderColor: "#7d2052", color: "#ffd6e7" }}>
+        <div className="surface text-sm" style={{ padding: 14, background: "#fef2f2", borderColor: "#fecaca", color: "#991b1b" }}>
           {error}
         </div>
       )}
@@ -230,9 +254,23 @@ export default function Dashboard() {
 
       {/* Status row */}
       <div className="flex items-center justify-between flex-wrap gap-3 px-1">
-        <div className="text-[11px] uppercase tracking-[0.12em] text-zoca-textMuted">
-          Showing <span className="text-emerald-300 font-bold">{filtered.length}</span> / {rows.length}
-          {lastFetchLabel && (<> · Last refresh <span className="text-zoca-text font-semibold">{lastFetchLabel}</span></>)}
+        <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.1em] text-zoca-textMuted">
+          <span>Showing <span className="text-emerald-600 font-bold normal-case">{filtered.length}</span> / {rows.length}</span>
+          {lastFetchLabel && (
+            <>
+              <span className="text-zoca-strokeStrong">·</span>
+              <span>Last refresh <span className="text-zoca-text font-semibold normal-case">{lastFetchLabel}</span></span>
+            </>
+          )}
+          {activeKpi && activeKpi !== "outstanding" && activeKpi !== "invoices" && (
+            <>
+              <span className="text-zoca-strokeStrong">·</span>
+              <span className="filter-chip">
+                {KPI_LABELS[activeKpi]}
+                <button onClick={() => setActiveKpi(null)} aria-label="Clear filter">×</button>
+              </span>
+            </>
+          )}
         </div>
         <div className="flex gap-2">
           <ExportButton rows={filtered} annotations={annotations} multiMonthSet={multiMonthSet} />
@@ -248,7 +286,7 @@ export default function Dashboard() {
       </div>
 
       {/* Tabs */}
-      <div role="tablist" className="card-zoca !rounded-full !p-1.5 inline-flex gap-1 flex-wrap w-fit">
+      <div role="tablist" className="surface !rounded-full !p-1.5 inline-flex gap-1 flex-wrap w-fit">
         {TABS.map((t) => (
           <button
             key={t}
@@ -262,7 +300,13 @@ export default function Dashboard() {
         ))}
       </div>
 
-      <KpiCards rows={filtered} multiMonthSet={multiMonthSet} annotations={annotations} />
+      <KpiCards
+        rows={tabFiltered}
+        multiMonthSet={multiMonthSet}
+        annotations={annotations}
+        activeKpi={activeKpi}
+        onKpiClick={onKpiClick}
+      />
       <Charts rows={filtered} />
       <InvoicesTable
         rows={filtered}
